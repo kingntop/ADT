@@ -1,25 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 
-// Helper to get CLF Date: [31/Dec/2025:14:30:05 +0900]
-const getCLFDate = () => {
+// Helper to get Custom Date: [YYYY-MM-DD HH:mm:ss]
+const getLogDate = () => {
     const d = new Date();
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = months[d.getMonth()];
     const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
     const hours = String(d.getHours()).padStart(2, '0');
     const minutes = String(d.getMinutes()).padStart(2, '0');
     const seconds = String(d.getSeconds()).padStart(2, '0');
 
-    // Timezone offset (e.g., -540 for +09:00)
-    const offset = -d.getTimezoneOffset();
-    const sign = offset >= 0 ? '+' : '-';
-    const pad = (num) => String(Math.floor(Math.abs(num))).padStart(2, '0');
-    const offsetStr = `${sign}${pad(offset / 60)}${pad(offset % 60)}`;
-
-    return `[${day}/${month}/${year}:${hours}:${minutes}:${seconds} ${offsetStr}]`;
+    return `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
 };
 
 // Ensure logs directory exists (redundant if mkdir run, but good for safety)
@@ -57,7 +49,7 @@ const logger = {
             const ip = req.ip || req.connection.remoteAddress;
             // User from session if available, else '-'
             const user = (req.session && req.session.user && req.session.user.ename) ? req.session.user.ename : '-';
-            const date = getCLFDate();
+            const date = getLogDate();
             const method = req.method;
             const url = req.originalUrl || req.url;
             const httpVer = `HTTP/${req.httpVersion}`;

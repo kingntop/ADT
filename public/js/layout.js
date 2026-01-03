@@ -106,6 +106,23 @@ async function loadLayout(pageTitle) {
             }
         });
 
+        // Inject Pretendard Font Globally
+        if (!document.getElementById('font-pretendard')) {
+            const link = document.createElement('link');
+            link.id = 'font-pretendard';
+            link.rel = 'stylesheet';
+            link.href = 'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css';
+            document.head.appendChild(link);
+
+            const style = document.createElement('style');
+            style.innerHTML = `
+                body, html, button, input, select, textarea {
+                    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
     } catch (error) {
         console.error("Error loading layout:", error);
     }

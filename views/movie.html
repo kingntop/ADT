@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영화 목록 - Dams PLUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Custom scrollbar for better looking */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a202c;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+        }
+
+        .line-clamp-4 {
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            line-clamp: 4;
+            /* Standard property */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 h-screen flex overflow-hidden transition-colors duration-300">
+
+    <!-- SIDEBAR -->
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- HEADER -->
+
+        <!-- Content -->
+        <main
+            class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 transition-colors duration-300">
+
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">Popular Movies</h1>
+
+            <!-- Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="movieGrid">
+                <!-- Loaded via JS -->
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/js/layout.js"></script>
+    <script>
+        loadLayout('영화 목록');
+
+        const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+
+        async function loadMovies() {
+            try {
+                const res = await fetch('/api/movies');
+                if (!res.ok) throw new Error('Failed to fetch movies');
+                const movies = await res.json();
+                renderMovies(movies);
+            } catch (error) {
+                console.error(error);
+                document.getElementById('movieGrid').innerHTML = `<div class="text-red-500">Failed to load movies.</div>`;
+            }
+        }
+
+        function renderMovies(movies) {
+            const grid = document.getElementById('movieGrid');
+            grid.innerHTML = '';
+
+            movies.forEach(movie => {
+                const card = document.createElement('div');
+                card.className = 'bg-black text-white rounded-lg overflow-hidden relative shadow-lg group h-[500px] flex flex-col';
+
+                // Background Image
+                const bgImage = movie.poster_path ? `${IMAGE_BASE_URL}${movie.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Image';
+
+                card.innerHTML = `
+                    <!-- Background with Overlay -->
+                    <div class="absolute inset-0 z-0">
+                        <img src="${bgImage}" alt="${movie.title}" class="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-300">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent"></div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="relative z-10 p-6 h-full flex flex-col">
+                        
+                        <!-- Header -->
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h2 class="text-xl font-bold leading-tight mb-1 text-white shadow-black drop-shadow-md">${movie.title}</h2>
+                                <p class="text-xs text-gray-400">${movie.release_date}</p>
+                            </div>
+                            <span class="bg-gray-800 text-white text-xs font-bold px-2 py-1 rounded border border-gray-600">
+                                ${movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
+                            </span>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="flex-1 overflow-hidden">
+                            <p class="text-sm text-gray-300 leading-relaxed line-clamp-4 mb-4">
+                                ${movie.overview || 'No description available.'}
+                            </p>
+                        </div>
+
+                        <!-- Footer / Actions -->
+                        <div class="mt-auto flex justify-between items-center pt-4 border-t border-gray-800">
+                            <!-- Movie Tag (Static for demo) -->
+                            <span class="text-xs text-gray-500 uppercase tracking-wider">movie</span>
+
+                            <!-- Buttons -->
+                            <div class="flex space-x-2">
+                                <button class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-3 rounded transition-colors">
+                                    Add to List
+                                </button>
+                                <button class="bg-white text-gray-900 w-8 h-8 flex items-center justify-center rounded hover:bg-gray-200 transition-colors">
+                                    <i class="fa-regular fa-heart"></i>
+                                </button>
+                                <button class="bg-white text-gray-900 w-8 h-8 flex items-center justify-center rounded hover:bg-gray-200 transition-colors">
+                                    <i class="fa-solid fa-share-nodes"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        loadMovies();
+    </script>
+</body>
+
+</html>

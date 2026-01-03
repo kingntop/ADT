@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>할일 달력 - Dams PLUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- FullCalendar CDN and Locales -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <style>
+        .fc-event {
+            cursor: pointer;
+        }
+
+        /* Custom Styling for Clean Look */
+        .fc-header-toolbar {
+            margin-bottom: 24px !important;
+        }
+
+        .fc-toolbar-title {
+            font-size: 1.5rem !important;
+            font-weight: 500 !important;
+            color: #374151;
+            /* gray-700 */
+        }
+
+        .dark .fc-toolbar-title {
+            color: #d1d5db;
+            /* gray-300 */
+        }
+
+        .fc-button-primary {
+            background-color: transparent !important;
+            border-color: #e5e7eb !important;
+            /* gray-200 */
+            color: #374151 !important;
+            /* gray-700 */
+            box-shadow: none !important;
+        }
+
+        .dark .fc-button-primary {
+            border-color: #4b5563 !important;
+            /* gray-600 */
+            color: #d1d5db !important;
+            /* gray-300 */
+        }
+
+        .fc-button-primary:hover {
+            background-color: #f3f4f6 !important;
+            /* gray-100 */
+        }
+
+        .dark .fc-button-primary:hover {
+            background-color: #374151 !important;
+            /* gray-700 */
+        }
+
+        .fc-button-active {
+            background-color: #e5e7eb !important;
+            /* gray-200 */
+            border-color: #d1d5db !important;
+            color: #111827 !important;
+        }
+
+        .dark .fc-button-active {
+            background-color: #4b5563 !important;
+            border-color: #6b7280 !important;
+            color: #fff !important;
+        }
+
+        /* Grid and Day Cells */
+        .fc-theme-standard td,
+        .fc-theme-standard th {
+            border-color: #e5e7eb;
+            /* gray-200 */
+        }
+
+        .dark .fc-theme-standard td,
+        .dark .fc-theme-standard th {
+            border-color: #374151;
+            /* gray-700 */
+        }
+
+        .fc-daygrid-day-number {
+            text-decoration: none !important;
+            color: #4b5563;
+            /* gray-600 */
+        }
+
+        .dark .fc-daygrid-day-number {
+            color: #9ca3af;
+            /* gray-400 */
+        }
+
+        .fc-col-header-cell-cushion {
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .dark .fc-col-header-cell-cushion {
+            color: #d1d5db;
+        }
+
+        /* Sunday Red */
+        .fc-day-sun .fc-daygrid-day-number {
+            color: #ef4444;
+            /* red-500 */
+        }
+
+        /* Saturday Blue (Optional, common in Korea) */
+        .fc-day-sat .fc-daygrid-day-number {
+            color: #3b82f6;
+            /* blue-500 */
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 flex h-screen overflow-hidden transition-colors duration-300">
+
+    <!-- Sidebar -->
+    <!-- SIDEBAR -->
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- Header -->
+        <!-- HEADER -->
+
+        <!-- Main Area -->
+        <main class="flex-1 overflow-auto p-6 bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-colors">
+
+                <!-- Status Legend -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-3">작업 상태</h3>
+                    <div class="flex space-x-2">
+                        <span class="px-3 py-1 rounded text-white text-sm font-semibold"
+                            style="background-color: #f59e0b;">
+                            PENDING (대기)
+                        </span>
+                        <span class="px-3 py-1 rounded text-white text-sm font-semibold"
+                            style="background-color: #3788d8;">
+                            RUNNING (진행중)
+                        </span>
+                        <span class="px-3 py-1 rounded text-white text-sm font-semibold"
+                            style="background-color: #10b981;">
+                            COMPLETED (완료)
+                        </span>
+                    </div>
+                </div>
+
+                <div id='calendar'></div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Event Detail Modal -->
+    <div id="eventModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-96 max-w-full shadow-xl transition-colors">
+            <h3 id="modalTitle" class="text-xl font-bold mb-4 text-gray-900 dark:text-white"></h3>
+            <p id="modalDate" class="text-sm text-gray-500 dark:text-gray-400 mb-2"></p>
+            <p id="modalStatus" class="text-sm font-semibold mb-4"></p>
+            <div class="flex justify-end">
+                <button onclick="closeModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+                    닫기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/layout.js"></script>
+    <script>
+        loadLayout('할일 달력');
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                locale: 'ko', // Korean Locale
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,listMonth'
+                },
+                buttonText: {
+                    today: '오늘',
+                    month: '월',
+                    list: '일정목록',
+                    prev: '‹',
+                    next: '›'
+                },
+                buttonIcons: false, // UI 이슈 해결을 위해 텍스트로 대체
+                dayCellContent: function (e) {
+                    return e.dayNumberText.replace('일', '') + '일';
+                },
+                events: async function (info, successCallback, failureCallback) {
+                    try {
+                        const res = await fetch('/api/tasks');
+                        if (!res.ok) throw new Error('Failed to fetch tasks');
+                        const tasks = await res.json();
+
+                        const events = tasks.map(task => {
+                            // Skip if no target date
+                            if (!task.completed_at) return null;
+
+                            let color = '#3788d8'; // Default Blue
+                            if (task.status === 'COMPLETED') color = '#10b981'; // Green (Tailwind emerald-500)
+                            if (task.status === 'PENDING') color = '#f59e0b'; // Yellow (Tailwind amber-500)
+
+                            return {
+                                title: task.todo,
+                                start: task.completed_at, // Changed to completed_at
+                                extendedProps: {
+                                    status: task.status,
+                                    assignee: task.assignee_name
+                                },
+                                backgroundColor: color,
+                                borderColor: color,
+                                textColor: '#ffffff'
+                            };
+                        }).filter(e => e !== null); // Filter out nulls
+                        successCallback(events);
+                    } catch (err) {
+                        console.error(err);
+                        failureCallback(err);
+                    }
+                },
+                eventClick: function (info) {
+                    showEventDetails(info.event);
+                }
+            });
+            calendar.render();
+        });
+
+        function showEventDetails(event) {
+            document.getElementById('modalTitle').textContent = event.title;
+            document.getElementById('modalDate').textContent = event.start.toLocaleString();
+
+            const statusEl = document.getElementById('modalStatus');
+            statusEl.textContent = event.extendedProps.status;
+
+            if (event.extendedProps.status === 'COMPLETED') {
+                statusEl.className = 'text-green-600 dark:text-green-400 font-bold mb-4';
+            } else {
+                statusEl.className = 'text-yellow-600 dark:text-yellow-400 font-bold mb-4';
+            }
+
+            document.getElementById('eventModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('eventModal').classList.add('hidden');
+        }
+    </script>
+</body>
+
+</html>

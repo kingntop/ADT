@@ -1,9 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
+/* Font Imported dynamically in layout.js to ensure consistency */
 body {
-    font-family: "NanumSquare", "Nanum Barun Gothic", "Pretendard", 
-                 "-apple-system", "BlinkMacSystemFont", 
-                 "Apple SD Gothic Neo", "Malgun Gothic", 
-                 "Dotum", "sans-serif";
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
     -webkit-font-smoothing: antialiased;
 }

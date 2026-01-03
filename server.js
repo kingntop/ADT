@@ -38,7 +38,7 @@ app.use(helmet({
             scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
             scriptSrcAttr: ["'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
-            fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com"],
+            fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net"],
             imgSrc: ["'self'", "data:", "*"],
             connectSrc: ["'self'"],
         },
@@ -147,6 +147,7 @@ const departmentRoutes = require('./routes/departments')(pool);
 const treeRoutes = require('./routes/tree')(pool);
 const taskRoutes = require('./routes/tasks')(pool);
 const imageRoutes = require('./routes/images')(pool);
+const movieRoutes = require('./routes/movies')(pool);
 
 app.use('/auth', authRoutes);
 app.use('/api/stats', isAuthenticated, statsRoutes);
@@ -155,6 +156,7 @@ app.use('/api/departments', isAuthenticated, departmentRoutes);
 app.use('/api/tree', isAuthenticated, treeRoutes);
 app.use('/api/tasks', isAuthenticated, taskRoutes);
 app.use('/api/images', imageRoutes); // Public access for images (or add auth if needed)
+app.use('/api/movies', isAuthenticated, movieRoutes);
 app.use('/api/keys', isAuthenticated, require('./routes/apikeys')(pool));
 
 // External API (v1)
@@ -213,6 +215,8 @@ app.get('/departments', isAuthenticated, (req, res) => renderPage('departments.h
 app.get('/search', isAuthenticated, (req, res) => renderPage('search.html', res));
 app.get('/tree', isAuthenticated, (req, res) => renderPage('tree.html', res)); // New View
 app.get('/tasks', isAuthenticated, (req, res) => renderPage('tasks.html', res)); // Tasks View
+app.get('/calendars', isAuthenticated, (req, res) => renderPage('calendars.html', res)); // Calendars View
+app.get('/movies', isAuthenticated, (req, res) => renderPage('movie.html', res)); // Movies View
 app.get('/images', isAuthenticated, (req, res) => renderPage('images.html', res)); // Images View
 app.get('/apikeys', isAuthenticated, (req, res) => renderPage('apikeys.html', res)); // API Keys View
 
@@ -228,6 +232,11 @@ app.get('/', (req, res) => {
 
 // 404 Handler (Must be after all routes, before Error Handler)
 app.use((req, res, next) => {
+    // Suppress logs for specific known paths
+    if (req.originalUrl.includes('.well-known/appspecific/com.chrome.devtools.json')) {
+        return res.status(404).send('Not Found');
+    }
+
     const err = new Error('Not Found');
     err.status = 404;
     logger.error(err, `[404] ${req.method} ${req.originalUrl} IP:${req.ip}`);

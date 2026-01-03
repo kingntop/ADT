@@ -59,6 +59,9 @@
                                 <th
                                     class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
                                     생성일</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    완료목표일</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
@@ -132,6 +135,13 @@
                         class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 focus:ring-blue-500 text-sm bg-white dark:bg-gray-700 dark:text-white transition-colors">
                         <option value="">(Unassigned)</option>
                     </select>
+                </div>
+
+                <!-- Completed At (Target Date) -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Target Date</label>
+                    <input type="date" name="completed_at"
+                        class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 focus:ring-blue-500 text-sm bg-white dark:bg-gray-700 dark:text-white transition-colors">
                 </div>
 
             </form>
@@ -215,6 +225,7 @@
                     <td class="px-6 py-4 text-sm text-gray-900 dark:text-white truncate max-w-md" title="${task.todo}">${task.todo}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${task.assignee_name || '-'}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${new Date(task.created_at).toLocaleDateString()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${task.completed_at ? new Date(task.completed_at).toLocaleDateString() : '-'}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -297,7 +308,8 @@
             document.getElementById('taskIdInput').value = task.task_id;
             form.status.value = task.status;
             form.todo.value = task.todo;
-            form.empno.value = task.empno || ''; // Handle null properly
+            form.empno.value = task.empno || '';
+            form.completed_at.value = task.completed_at ? task.completed_at.split('T')[0] : '';
 
             isEditMode = true;
             document.getElementById('btnDelete').classList.remove('hidden');
