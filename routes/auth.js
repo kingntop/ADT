@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
+const logger = require('../utils/logger');
 
 module.exports = (pool) => {
     // Login Endpoint
@@ -59,6 +60,7 @@ module.exports = (pool) => {
 
         } catch (err) {
             console.error('Database error:', err);
+            logger.error(err, '[Auth] Login Failed');
             res.status(500).json({ success: false, message: 'Internal server error' });
         }
     });
@@ -98,6 +100,7 @@ module.exports = (pool) => {
 
         } catch (err) {
             console.error('Password change error:', err);
+            logger.error(err, '[Auth] Password Change Failed');
             res.status(500).json({ success: false, message: 'Internal server error' });
         }
     });

@@ -21,20 +21,22 @@ if (!fs.existsSync(logDir)) {
 }
 
 const writeLog = (type, message) => {
-    // For error logs, keep using YYYYMMDD for filename
-    // For access logs, arguably same
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const dateStr = `${year}${month}${day}`;
+    let filename;
+    if (type === 'error') {
+        filename = 'error.log';
+    } else {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const dateStr = `${year}${month}${day}`;
+        filename = `${type}_${dateStr}.log`;
+    }
 
-    const filename = `${type}_${dateStr}.log`;
     const filePath = path.join(logDir, filename);
 
-    // If it's an error log, adding timestamp might be redundant if message has it, 
-    // but the `accessMiddleware` constructs the full line.
-    // Let's just append message directly for raw control.
+    // If it's an error log, ensure we have a timestamp if not present (though our error logger adds context, raw message might not)
+    // But let's stick to the plan: just write the message.
 
     fs.appendFile(filePath, message + '\n', (err) => {
         if (err) console.error(`Failed to write to ${filename}:`, err);
@@ -66,7 +68,8 @@ const logger = {
 
     // Error Logger
     error: (err, context = '') => {
-        const msg = context ? `${context}: ${err.message}\nStack: ${err.stack}` : `${err.message}\nStack: ${err.stack}`;
+        const date = getLogDate();
+        const msg = context ? `${date} [ERROR] ${context}: ${err.message}\nStack: ${err.stack}\n` : `${date} [ERROR] ${err.message}\nStack: ${err.stack}\n`;
         writeLog('error', msg);
     },
 
