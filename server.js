@@ -32,7 +32,6 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // Security Middleware
 app.use(helmet({
-    hsts: false, // Disable HSTS for HTTP testing
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
