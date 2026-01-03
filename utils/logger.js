@@ -70,6 +70,10 @@ const logger = {
     error: (err, context = '') => {
         const date = getLogDate();
         const msg = context ? `${date} [ERROR] ${context}: ${err.message}\nStack: ${err.stack}\n` : `${date} [ERROR] ${err.message}\nStack: ${err.stack}\n`;
+
+        // Also log to console for immediate visibility
+        console.error(msg);
+
         writeLog('error', msg);
     },
 

@@ -137,6 +137,29 @@ const pool = new Pool({
     ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
 });
 
+// Pool Event Listeners for Debugging
+pool.on('connect', () => {
+    console.log('📦 New client connected to database');
+});
+
+pool.on('error', (err, client) => {
+    console.error('❌ Unexpected error on idle client', err);
+    process.exit(-1);
+});
+
+// Immediate Connection Check
+(async () => {
+    try {
+        console.log(`🔌 Attempting to connect to database... (Host: ${process.env.DB_HOST || 'localhost'})`);
+        const client = await pool.connect();
+        console.log('✅ Connected to PostgreSQL database successfully!');
+        client.release();
+    } catch (err) {
+        console.error('❌ Database connection failed:', err);
+        process.exit(1); // Exit if DB is unreachable
+    }
+})();
+
 
 
 // Routes
