@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 엔드포인트 관리 - Dams PLUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+    <style>
+        .drawer {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .drawer.open {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 flex h-screen overflow-hidden transition-colors duration-300">
+
+    <!-- Sidebar -->
+    <!-- SIDEBAR -->
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- Header -->
+        <!-- HEADER -->
+
+        <!-- Main Area -->
+        <main class="flex-1 overflow-auto p-6 bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+            <!-- Toolbar -->
+            <div
+                class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm mb-6 flex justify-between items-center transition-colors">
+                <div class="flex space-x-2">
+                    <div class="relative">
+                        <i
+                            class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" id="searchInput" placeholder="API 검색..."
+                            class="pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 transition-colors">
+                    </div>
+                </div>
+                <button onclick="openDrawer()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center transition">
+                    <i class="fa-solid fa-plus mr-2"></i> API 등록
+                </button>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-colors">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                메서드</th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                경로</th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                API 이름</th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                버전</th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                상태</th>
+                            <th
+                                class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="apiTableBody"
+                        class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <!-- Rows will be populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination Footer -->
+            <div id="pagination-container"></div>
+        </main>
+    </div>
+
+    <!-- Right Drawer -->
+    <div id="drawer"
+        class="fixed inset-y-0 right-0 w-[800px] bg-white dark:bg-gray-800 shadow-2xl drawer z-20 flex flex-col transition-colors">
+        <div
+            class="px-6 py-4 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700 transition-colors">
+            <h2 id="drawerTitle" class="text-xl font-bold text-gray-800 dark:text-white">API 등록</h2>
+            <button onclick="closeDrawer()"
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <i class="fa-solid fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <form id="apiForm" onsubmit="handleSave(event)" class="p-6 flex-1 overflow-y-auto space-y-4">
+            <input type="hidden" id="apiId">
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">API 이름</label>
+                <input type="text" id="apiName" required
+                    class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">메서드</label>
+                    <select id="apiMethod" required
+                        class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white transition-colors">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                        <option value="PATCH">PATCH</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">버전</label>
+                    <input type="text" id="apiVersion" value="1.0.0"
+                        class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white transition-colors">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">API 경로</label>
+                <input type="text" id="apiPath" required placeholder="/v1/..."
+                    class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">설명</label>
+                <textarea id="apiDesc" rows="2"
+                    class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white transition-colors"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">비고</label>
+                <textarea id="apiRemarks" rows="2"
+                    class="w-full px-3 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white transition-colors"></textarea>
+            </div>
+
+            <div class="flex items-center">
+                <input type="checkbox" id="isActive"
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:border-gray-600 dark:bg-gray-700 transition-colors"
+                    checked>
+                <label for="isActive" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">사용 가능</label>
+            </div>
+        </form>
+
+        <div
+            class="px-6 py-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex justify-end space-x-3 transition-colors">
+            <button type="button" onclick="closeDrawer()"
+                class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600">
+                취소
+            </button>
+            <button type="submit" form="apiForm"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm">
+                저장
+            </button>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div id="overlay" onclick="closeDrawer()" class="fixed inset-0 bg-black bg-opacity-25 hidden z-10"></div>
+
+    <script>
+        let apiData = [];
+        let descEditor, remarksEditor;
+        let currentPage = 1;
+        const limit = 10;
+
+        // Initialize EasyMDE
+        document.addEventListener('DOMContentLoaded', () => {
+            // ... existing init ...
+            descEditor = new EasyMDE({
+                element: document.getElementById('apiDesc'),
+                forceSync: true,
+                placeholder: "설명을 입력하세요...",
+                spellChecker: false,
+                status: false,
+                minHeight: "100px"
+            });
+            remarksEditor = new EasyMDE({
+                element: document.getElementById('apiRemarks'),
+                forceSync: true,
+                placeholder: "비고를 입력하세요...",
+                spellChecker: false,
+                status: false,
+                minHeight: "100px"
+            });
+        });
+
+        async function fetchAPIs(page = 1) {
+            currentPage = page;
+            try {
+                const res = await fetch(`/api/endpoints?page=${page}&limit=${limit}`);
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        window.location.href = '/login.html';
+                        return;
+                    }
+                    throw new Error(`Server returned ${res.status}`);
+                }
+                const response = await res.json();
+
+                // Handle error response body
+                if (response.error) {
+                    throw new Error(response.error);
+                }
+
+                const data = Array.isArray(response) ? response : response.data;
+
+                if (!data) {
+                    throw new Error('Invalid response format');
+                }
+
+                const total = response.total || (Array.isArray(response) ? response.length : 0);
+
+                apiData = data;
+                renderTable(apiData);
+
+                renderPagination('pagination-container', total, limit, currentPage, (newPage) => {
+                    fetchAPIs(newPage);
+                });
+            } catch (err) {
+                console.error('Error fetching APIs:', err);
+                // Don't alert if we redirected
+                if (err.message !== 'Redirecting') {
+                    alert('Failed to load APIs: ' + err.message);
+                }
+            }
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('apiTableBody');
+            tbody.innerHTML = data.map(api => `
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            ${getMethodColor(api.method)}">
+                            ${api.method}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 font-mono text-sm text-gray-600 dark:text-gray-300">${api.endpoint_path}</td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">${api.api_name}</div>
+                        <!-- Strip markdown for preview -->
+                        <div class="text-sm text-gray-500 dark:text-gray-400 truncate w-48" title="${api.description || ''}">
+                            ${(api.description || '-').replace(/[#_*\[\]()]/g, '')}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            ${api.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${api.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="editAPI(${api.api_id})" class="text-blue-600 hover:text-blue-900 mr-3">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="deleteAPI(${api.api_id})" class="text-red-600 hover:text-red-900">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getMethodColor(method) {
+            switch ((method || '').toUpperCase()) {
+                case 'GET': return 'bg-blue-100 text-blue-800';
+                case 'POST': return 'bg-green-100 text-green-800';
+                case 'PUT': return 'bg-yellow-100 text-yellow-800';
+                case 'DELETE': return 'bg-red-100 text-red-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        // Drawer Logic
+        function openDrawer(isEdit = false) {
+            document.getElementById('drawer').classList.add('open');
+            document.getElementById('overlay').classList.remove('hidden');
+
+            // Re-layout editors to ensure they display correctly in the drawer
+            if (descEditor && descEditor.codemirror) descEditor.codemirror.refresh();
+            if (remarksEditor && remarksEditor.codemirror) remarksEditor.codemirror.refresh();
+
+            if (!isEdit) {
+                document.getElementById('drawerTitle').textContent = 'API 등록';
+                document.getElementById('apiForm').reset();
+                document.getElementById('apiId').value = '';
+
+                // Reset editors
+                if (descEditor) descEditor.value('');
+                if (remarksEditor) remarksEditor.value('');
+            }
+        }
+
+        function closeDrawer() {
+            document.getElementById('drawer').classList.remove('open');
+            document.getElementById('overlay').classList.add('hidden');
+        }
+
+        function editAPI(id) {
+            const api = apiData.find(a => a.api_id === id);
+            if (!api) return;
+
+            document.getElementById('apiId').value = api.api_id;
+            document.getElementById('apiName').value = api.api_name;
+            document.getElementById('apiMethod').value = api.method;
+            document.getElementById('apiPath').value = api.endpoint_path;
+            document.getElementById('apiVersion').value = api.version;
+            document.getElementById('isActive').checked = api.is_active;
+
+            // Set editor values
+            if (descEditor) descEditor.value(api.description || '');
+            if (remarksEditor) remarksEditor.value(api.remarks || '');
+
+            document.getElementById('drawerTitle').textContent = 'API 수정';
+            openDrawer(true);
+        }
+
+        async function handleSave(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('apiId').value;
+            const data = {
+                api_name: document.getElementById('apiName').value,
+                method: document.getElementById('apiMethod').value,
+                endpoint_path: document.getElementById('apiPath').value,
+                version: document.getElementById('apiVersion').value,
+                description: descEditor ? descEditor.value() : '',
+                remarks: remarksEditor ? remarksEditor.value() : '',
+                is_active: document.getElementById('isActive').checked
+            };
+
+            const url = id ? `/api/endpoints/${id}` : '/api/endpoints';
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || '저장 실패');
+                }
+
+                closeDrawer();
+                fetchAPIs();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function deleteAPI(id) {
+            if (!confirm('정말로 이 API 엔드포인트를 삭제하시겠습니까?')) return;
+
+            try {
+                const res = await fetch(`/api/endpoints/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('삭제 실패');
+                fetchAPIs();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = apiData.filter(api =>
+                api.api_name.toLowerCase().includes(term) ||
+                api.endpoint_path.toLowerCase().includes(term)
+            );
+            renderTable(filtered);
+        });
+
+        // Initial Load
+        fetchAPIs();
+    </script>
+    <script src="/js/layout.js"></script>
+    <script>
+        loadLayout('API 엔드포인트 관리');
+    </script>
+</body>
+
+</html>

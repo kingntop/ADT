@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>앱 사용자 관리 - Dams PLUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 h-screen flex overflow-hidden transition-colors duration-300">
+
+    <!-- Sidebar Container -->
+    <!-- SIDEBAR -->
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- Header Container -->
+        <!-- HEADER -->
+
+        <!-- Content -->
+        <main
+            class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 transition-colors duration-300">
+
+            <!-- Toolbar -->
+            <div
+                class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6 flex items-center justify-between transition-colors">
+                <div class="flex space-x-2">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input type="text" id="searchInput" placeholder="검색..."
+                            class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-64 bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 transition-colors">
+                    </div>
+                </div>
+                <button onclick="openDrawer()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded shadow-sm text-sm transition-colors">
+                    <i class="fa-solid fa-user-plus mr-2"></i> 신규 사용자
+                </button>
+            </div>
+
+            <!-- Table -->
+            <div
+                class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th class="w-10 px-6 py-3"></th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    사용자명</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    이메일</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    직책</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    상태</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    마지막 로그인</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="userTableBody">
+                            <!-- Rows loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination Footer -->
+                <div id="pagination-container"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Drawer Overlay -->
+    <div id="drawerOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-40 transition-opacity"
+        onclick="closeDrawer()"></div>
+
+    <!-- Drawer -->
+    <div id="userDrawer"
+        class="fixed inset-y-0 right-0 w-96 bg-white shadow-xl transform translate-x-full transition-transform duration-300 z-50 flex flex-col">
+        <!-- Drawer Header -->
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+            <h2 class="text-lg font-bold text-gray-800" id="drawerTitle">신규 사용자 등록</h2>
+            <button onclick="closeDrawer()" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Drawer Body -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 pt-2">
+            <form id="userForm">
+                <input type="hidden" name="user_id" id="userIdInput">
+
+                <!-- Email -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">이메일 주소</label>
+                    <input type="email" name="email" id="emailInput" required
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-gray-50">
+                </div>
+
+                <!-- Username -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">사용자명</label>
+                    <input type="text" name="username" id="usernameInput" required
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-gray-50">
+                </div>
+
+                <!-- Password -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">비밀번호</label>
+                    <input type="password" name="password" id="passwordInput"
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-gray-50">
+                    <p class="text-xs text-gray-500 mt-1 hidden" id="passwordHint">현재 비밀번호를 유지하려면 비워두세요
+                    </p>
+                </div>
+
+                <!-- Role -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">직책</label>
+                    <select name="role_id" id="roleInput" required
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+
+                <!-- Is Locked -->
+                <div class="flex items-center mt-4">
+                    <input type="checkbox" name="is_locked" id="isLockedInput"
+                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="isLockedInput" class="ml-2 block text-sm text-gray-900">계정 잠금</label>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Drawer Footer -->
+        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-between">
+            <button id="btnDelete" onclick="deleteUser()" type="button"
+                class="hidden px-4 py-2 border border-red-300 text-red-700 bg-white hover:bg-red-50 rounded text-sm font-medium focus:outline-none">삭제</button>
+            <div class="flex ml-auto">
+                <button onclick="closeDrawer()" type="button"
+                    class="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded mr-2 text-sm font-medium">취소</button>
+                <button onclick="submitUser()" type="button"
+                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/layout.js"></script>
+    <script src="/js/pagination.js"></script>
+    <script>
+        loadLayout('앱 사용자 관리');
+        loadRoles(); // Load roles on start
+
+        let isEditMode = false;
+        let userData = [];
+        let rolesData = [];
+        let currentPage = 1;
+        const limit = 10;
+
+        async function loadRoles() {
+            try {
+                const res = await fetch('/api/roles');
+                rolesData = await res.json();
+                const select = document.getElementById('roleInput');
+                select.innerHTML = '';
+                rolesData.forEach(role => {
+                    const option = document.createElement('option');
+                    option.value = role.role_id;
+                    option.textContent = role.role_name;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error("Error loading roles:", err);
+            }
+        }
+
+        async function loadUsers(page = 1) {
+            currentPage = page;
+            try {
+                const res = await fetch(`/api/app_users?page=${page}&limit=${limit}`);
+                const response = await res.json();
+
+                const data = Array.isArray(response) ? response : response.data;
+                const total = response.total || (Array.isArray(response) ? response.length : 0);
+
+                userData = data;
+                renderTable(data);
+
+                renderPagination('pagination-container', total, limit, currentPage, (newPage) => {
+                    loadUsers(newPage);
+                });
+            } catch (error) {
+                console.error("Error loading users:", error);
+            }
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+            data.forEach(user => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <button onclick="openEditDrawer(${user.user_id})" class="text-blue-500 hover:text-blue-700 focus:outline-none">
+                            <i class="fa-regular fa-pen-to-square"></i>
+                        </button>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.username}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.email}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                            ${user.role_name || '-'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            ${user.is_locked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                            ${user.is_locked ? 'Locked' : 'Active'}
+                        </span>
+                    </td>
+                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${user.last_login_at ? new Date(user.last_login_at).toLocaleString() : '-'}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        const drawer = document.getElementById('userDrawer');
+        const overlay = document.getElementById('drawerOverlay');
+        const form = document.getElementById('userForm');
+
+        function openDrawer() {
+            document.getElementById('drawerTitle').textContent = '신규 사용자 등록';
+            form.reset();
+            document.getElementById('userIdInput').value = '';
+            document.getElementById('passwordInput').required = true;
+            document.getElementById('passwordHint').classList.add('hidden');
+            document.getElementById('emailInput').disabled = false;
+
+            isEditMode = false;
+            document.getElementById('btnDelete').classList.add('hidden');
+
+            drawer.classList.remove('translate-x-full');
+            overlay.classList.remove('hidden');
+        }
+
+        function openEditDrawer(userId) {
+            const user = userData.find(u => u.user_id == userId);
+            if (!user) return;
+
+            document.getElementById('drawerTitle').textContent = '사용자 정보 수정';
+            document.getElementById('userIdInput').value = user.user_id;
+            document.getElementById('usernameInput').value = user.username;
+            document.getElementById('emailInput').value = user.email;
+
+            document.getElementById('roleInput').value = user.role_id;
+            document.getElementById('isLockedInput').checked = user.is_locked;
+
+            document.getElementById('passwordInput').required = false;
+            document.getElementById('passwordHint').classList.remove('hidden');
+
+            isEditMode = true;
+            document.getElementById('btnDelete').classList.remove('hidden');
+
+            drawer.classList.remove('translate-x-full');
+            overlay.classList.remove('hidden');
+        }
+
+        function closeDrawer() {
+            drawer.classList.add('translate-x-full');
+            overlay.classList.add('hidden');
+        }
+
+        async function submitUser() {
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            data.is_locked = document.getElementById('isLockedInput').checked;
+
+            const id = data.user_id;
+
+            try {
+                let url = '/api/app_users';
+                let method = 'POST';
+
+                if (isEditMode && id) {
+                    url = `/api/app_users/${id}`;
+                    method = 'PUT';
+                    if (!data.password) {
+                        delete data.password;
+                    }
+                }
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+
+                if (!res.ok) {
+                    alert('Error: ' + (result.message || '작업 실패'));
+                } else {
+                    closeDrawer();
+                    loadUsers();
+                }
+            } catch (err) {
+                console.error(err);
+                alert('사용자 저장 실패');
+            }
+        }
+
+        async function deleteUser() {
+            if (!confirm('정말로 이 사용자를 삭제하시겠습니까?')) return;
+
+            const id = document.getElementById('userIdInput').value;
+            if (!id) return;
+
+            try {
+                const res = await fetch(`/api/app_users/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    closeDrawer();
+                    loadUsers();
+                } else {
+                    alert('사용자 삭제 실패');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('삭제 중 오류 발생');
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = userData.filter(u =>
+                u.username.toLowerCase().includes(term) ||
+                u.email.toLowerCase().includes(term)
+            );
+            renderTable(filtered);
+        });
+
+        loadUsers();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Dams PLUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 h-screen flex items-center justify-center transition-colors duration-300">
+
+    <div class="bg-white dark:bg-gray-800 p-10 rounded-lg shadow-lg w-96 text-center transition-colors">
+        <!-- Icon -->
+        <div class="mb-6">
+            <div
+                class="bg-blue-500 text-white w-16 h-16 rounded flex items-center justify-center mx-auto text-3xl shadow-sm">
+                <i class="fa-solid fa-users"></i>
+            </div>
+        </div>
+
+        <!-- Title -->
+        <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-8 transition-colors">Demonstration - EMP / DEPT
+        </h2>
+
+        <!-- Form -->
+        <form id="loginForm" class="space-y-6">
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                    <i class="fa-solid fa-envelope"></i>
+                </span>
+                <input type="email" id="email" name="email" placeholder="Email Address"
+                    class="w-full pl-10 pr-4 py-2 border border-blue-400 dark:border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-blue-50 dark:bg-gray-700 text-gray-700 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
+                    required>
+            </div>
+
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                    <i class="fa-solid fa-key"></i>
+                </span>
+                <input type="password" id="password" name="password" placeholder="Password"
+                    class="w-full pl-10 pr-10 py-2 border border-gray-200 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 dark:text-white dark:bg-gray-700 transition-colors"
+                    required>
+                <span
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300"
+                    onclick="togglePassword()">
+                    <i id="eyeIcon" class="fa-regular fa-eye-slash"></i>
+                </span>
+            </div>
+
+            <div class="flex items-center justify-start text-sm text-gray-600 dark:text-gray-400">
+                <input type="checkbox" id="remember"
+                    class="mr-2 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
+                <label for="remember" class="transition-colors">Remember email</label>
+            </div>
+
+            <button type="submit"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition duration-200">
+                Sign In
+            </button>
+        </form>
+
+        <p id="message" class="mt-4 text-sm text-red-500 dark:text-red-400 font-medium hidden"></p>
+    </div>
+
+    <script>
+        // Check for saved theme preference on load to avoid flash
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        const form = document.getElementById('loginForm');
+        const messageEl = document.getElementById('message');
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            }
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            messageEl.classList.add('hidden');
+
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messageEl.textContent = `Welcome, ${data.user.username}!`;
+                    messageEl.classList.remove('text-red-500', 'dark:text-red-400');
+                    messageEl.classList.add('text-green-600', 'dark:text-green-400');
+
+                    localStorage.setItem('user', JSON.stringify(data.user));
+
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 500);
+                } else {
+                    messageEl.textContent = data.message;
+                    messageEl.classList.remove('hidden', 'text-green-600', 'dark:text-green-400');
+                    messageEl.classList.add('text-red-500', 'dark:text-red-400');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                messageEl.textContent = 'An error occurred. Please try again.';
+                messageEl.classList.remove('hidden');
+            }
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('expired') === 'true') {
+            messageEl.textContent = 'Session expired. Please log in again.';
+            messageEl.classList.remove('hidden', 'text-green-600', 'dark:text-green-400');
+            messageEl.classList.add('text-red-500', 'dark:text-red-400');
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>직원 관리 - Dams PLUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 h-screen flex overflow-hidden transition-colors duration-300">
+
+    <!-- Sidebar Container -->
+    <!-- SIDEBAR -->
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- Header Container -->
+        <!-- HEADER -->
+
+        <!-- Content -->
+        <main
+            class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 transition-colors duration-300">
+
+            <!-- Toolbar -->
+            <div
+                class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6 flex items-center justify-between transition-colors">
+                <div class="flex space-x-2">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input type="text" placeholder="검색..."
+                            class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-64 bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 transition-colors">
+                    </div>
+                    <button
+                        class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium py-2 px-4 rounded border border-gray-300 dark:border-gray-600 text-sm transition-colors">검색</button>
+                    <div class="relative group">
+                        <button
+                            class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium py-2 px-4 rounded border border-gray-300 dark:border-gray-600 text-sm flex items-center transition-colors">
+                            작업 <i class="fa-solid fa-chevron-down ml-2 text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+                <button onclick="openDrawer()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded shadow-sm text-sm transition-colors">신규
+                    등록</button>
+            </div>
+
+            <!-- Table -->
+            <div
+                class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th class="w-10 px-6 py-3"></th> <!-- Edit Icon Column -->
+                                <th onclick="toggleSort('ename')" data-sort="ename"
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transitionSelect">
+                                    직원명 <i class="sort-icon fa-solid fa-sort text-gray-400 ml-1 text-xs"></i></th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    직무</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    관리자</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    입사일</th>
+                                <th
+                                    class="px-6 py-3 text-right text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    급여</th>
+                                <th
+                                    class="px-6 py-3 text-right text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    보너스</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    부서</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+                            id="empTableBody">
+                            <!-- Rows loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination Footer -->
+                <!-- Pagination Footer -->
+                <div id="pagination-container"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Drawer Overlay -->
+    <div id="drawerOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-40 transition-opacity"
+        onclick="closeDrawer()"></div>
+
+    <!-- Drawer -->
+    <div id="empDrawer"
+        class="fixed inset-y-0 right-0 w-96 bg-white dark:bg-gray-800 shadow-xl transform translate-x-full transition-transform duration-300 z-50 flex flex-col transition-colors">
+        <!-- Drawer Header -->
+        <div
+            class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700 transition-colors">
+            <h2 class="text-lg font-bold text-gray-800 dark:text-white" id="drawerTitle">신규 직원 등록</h2>
+            <button onclick="closeDrawer()"
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Error Notification -->
+        <div id="errorNotification"
+            class="hidden mx-6 mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-bold">1 error has occurred</p>
+                    <p class="text-sm mt-1" id="errorMessage">Detailed error message here.</p>
+                </div>
+                <div class="ml-auto pl-3">
+                    <div class="-mx-1.5 -my-1.5 code">
+                        <button onclick="hideError()"
+                            class="inline-flex rounded-md p-1.5 text-yellow-500 hover:bg-yellow-100 focus:outline-none">
+                            <span class="sr-only">Dismiss</span>
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Drawer Body -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 pt-2">
+            <form id="createEmpForm">
+                <input type="hidden" name="empno" id="empnoInput">
+                <!-- Ename -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">이름</label>
+                    <input type="text" name="ename" required
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-gray-50">
+                </div>
+
+                <!-- Job -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">직무</label>
+                    <input type="text" name="job" required
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-gray-50">
+                </div>
+
+                <!-- Mgr -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">관리자</label>
+                    <select name="mgr" id="mgrSelect"
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
+                        <option value="">(없음)</option>
+                    </select>
+                </div>
+
+                <!-- Hiredate -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">입사일</label>
+                    <input type="text" name="hiredate" id="hiredateInput" required placeholder="Select date..."
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white cursor-pointer">
+                </div>
+
+                <!-- Sal -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">급여</label>
+                    <input type="number" name="sal" required
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-gray-50">
+                </div>
+
+                <!-- Comm -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">보너스</label>
+                    <input type="number" name="comm"
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-gray-50">
+                </div>
+
+                <!-- Deptno -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">부서</label>
+                    <select name="deptno" id="deptSelect"
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
+                        <option value="">(부서 선택)</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <!-- Drawer Footer -->
+        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-between">
+            <button id="btnDelete" onclick="deleteEmployee()" type="button"
+                class="hidden px-4 py-2 border border-red-300 text-red-700 bg-white hover:bg-red-50 rounded text-sm font-medium focus:outline-none">삭제</button>
+            <div class="flex ml-auto">
+                <button onclick="closeDrawer()" type="button"
+                    class="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded mr-2 text-sm font-medium">취소</button>
+                <button onclick="submitEmployee()" type="button"
+                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/layout.js"></script>
+    <script src="/js/pagination.js"></script>
+    <script>
+        loadLayout('직원 관리');
+
+        let currentPage = 1;
+        const limit = 10;
+        let currentSortField = 'empno';
+        let currentSortOrder = 'asc';
+
+        async function toggleSort(field) {
+            if (currentSortField === field) {
+                currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortField = field;
+                currentSortOrder = 'asc';
+            }
+            await loadEmployees(1);
+            updateSortIcons();
+        }
+
+        function updateSortIcons() {
+            // Reset all icons
+            document.querySelectorAll('.sort-icon').forEach(icon => {
+                icon.className = 'sort-icon fa-solid fa-sort text-gray-400 ml-1 text-xs';
+            });
+
+            // Update active icon
+            const activeHeader = document.querySelector(`th[data-sort="${currentSortField}"]`);
+            if (activeHeader) {
+                const icon = activeHeader.querySelector('.sort-icon');
+                if (icon) {
+                    icon.className = `sort-icon fa-solid fa-sort-${currentSortOrder === 'asc' ? 'up' : 'down'} text-blue-600 ml-1 text-xs`;
+                }
+            }
+        }
+
+        async function loadEmployees(page = 1) {
+            currentPage = page;
+            try {
+                const res = await fetch(`/api/employees?page=${page}&limit=${limit}&sortField=${currentSortField}&sortOrder=${currentSortOrder}`);
+                const response = await res.json();
+
+                // Handle different response formats (array vs object) for safety
+                const data = Array.isArray(response) ? response : response.data;
+                const total = response.total || data.length;
+
+                const tbody = document.getElementById('empTableBody');
+                tbody.innerHTML = '';
+
+                updateSortIcons();
+
+                data.forEach(emp => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700 transition transition-colors';
+
+                    // Format Config
+                    const currency = new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 });
+
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <button onclick="openEditDrawer('${emp.empno}', '${emp.ename}', '${emp.job || ''}', '${emp.mgr || ''}', '${emp.hiredate_str || ''}', '${emp.sal}', '${emp.comm || ''}', '${emp.deptno || ''}')" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 focus:outline-none">
+                                <i class="fa-regular fa-pen-to-square"></i>
+                            </button>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">${emp.ename}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${emp.job || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${emp.m_name || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${emp.hiredate_str || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">${currency.format(emp.sal)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-right">${emp.comm ? currency.format(emp.comm) : ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${emp.dname || '-'}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Render Pagination
+                renderPagination('pagination-container', total, limit, currentPage, (newPage) => {
+                    loadEmployees(newPage);
+                });
+
+                // Update Row Count Text (Optional, if we want to keep it sync with pagination or just remove it as pagination covers it)
+                // document.getElementById('rowCount').textContent = `${(page - 1) * limit + 1} - ${Math.min(page * limit, total)}`; 
+
+            } catch (error) {
+                console.error("Error loading employees:", error);
+            }
+        }
+
+        loadEmployees();
+
+        // Drawer Logic
+        const drawer = document.getElementById('empDrawer');
+        const overlay = document.getElementById('drawerOverlay');
+        const form = document.getElementById('createEmpForm');
+        let isEditMode = false;
+
+        function hideError() {
+            document.getElementById('errorNotification').classList.add('hidden');
+        }
+
+        function openDrawer() {
+            document.getElementById('drawerTitle').textContent = '신규 직원 등록';
+            form.reset();
+            hideError();
+            document.getElementById('empnoInput').value = '';
+            document.getElementById('deptSelect').classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+            document.getElementById('hiredateInput').classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+            form.sal.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+            isEditMode = false;
+            document.getElementById('btnDelete').classList.add('hidden'); // Hide Delete
+
+            // Reset Flatpickr
+            if (datePicker) datePicker.clear();
+
+            loadDropdowns();
+            drawer.classList.remove('translate-x-full');
+            overlay.classList.remove('hidden');
+        }
+
+        async function openEditDrawer(empno, ename, job, mgr, hiredate, sal, comm, deptno) {
+            document.getElementById('drawerTitle').textContent = '직원 정보 수정';
+            await loadDropdowns(); // Ensure dropdowns are loaded
+
+            hideError();
+            document.getElementById('deptSelect').classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+            document.getElementById('hiredateInput').classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+            form.sal.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+
+            document.getElementById('empnoInput').value = empno;
+            form.ename.value = ename;
+            form.job.value = job;
+            form.mgr.value = mgr;
+
+            // Set Flatpickr date
+            if (datePicker) datePicker.setDate(hiredate);
+            else form.hiredate.value = hiredate;
+
+            form.sal.value = sal;
+            form.comm.value = comm;
+            form.deptno.value = deptno;
+
+            isEditMode = true;
+            document.getElementById('btnDelete').classList.remove('hidden'); // Show Delete
+
+            drawer.classList.remove('translate-x-full');
+            overlay.classList.remove('hidden');
+        }
+
+        function closeDrawer() {
+            drawer.classList.add('translate-x-full');
+            overlay.classList.add('hidden');
+        }
+
+        // Dropdown Data Loading
+        async function loadDropdowns() {
+            // Load Depts
+            if (document.getElementById('deptSelect').options.length <= 1) {
+                const res = await fetch('/api/departments');
+                const depts = await res.json();
+                const deptSelect = document.getElementById('deptSelect');
+                depts.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.deptno;
+                    opt.textContent = d.dname;
+                    deptSelect.appendChild(opt);
+                });
+            }
+
+            // Load Managers (From existing employees)
+            if (document.getElementById('mgrSelect').options.length <= 1) {
+                const res = await fetch('/api/employees?all=true');
+                const emps = await res.json();
+                const mgrSelect = document.getElementById('mgrSelect');
+                emps.forEach(e => {
+                    const opt = document.createElement('option');
+                    opt.value = e.empno;
+                    opt.textContent = e.ename;
+                    mgrSelect.appendChild(opt);
+                });
+            }
+        }
+
+        async function submitEmployee() {
+            // Custom Validation for Hiredate
+            const hiredateInput = document.getElementById('hiredateInput');
+            if (!hiredateInput.value) {
+                document.getElementById('errorMessage').textContent = '입사일은 필수 항목입니다';
+                document.getElementById('errorNotification').classList.remove('hidden');
+                hiredateInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
+                // hiredate uses flatpickr, might need to style the input or the wrapper. The input has the class.
+                return;
+            }
+
+            // Custom Validation for Sal
+            const salInput = form.sal;
+            if (!salInput.value) {
+                document.getElementById('errorMessage').textContent = '급여는 필수 항목입니다';
+                document.getElementById('errorNotification').classList.remove('hidden');
+                salInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
+                salInput.focus();
+                return;
+            }
+
+            // Custom Validation for Deptno
+            const deptSelect = document.getElementById('deptSelect');
+            if (!deptSelect.value) {
+                document.getElementById('errorMessage').textContent = '부서는 필수 항목입니다';
+                document.getElementById('errorNotification').classList.remove('hidden');
+                deptSelect.classList.add('border-red-500', 'ring-2', 'ring-red-500');
+                deptSelect.focus();
+                return;
+            }
+
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const empno = data.empno;
+
+            try {
+                let url = '/api/employees';
+                let method = 'POST';
+
+                if (isEditMode && empno) {
+                    url = `/api/employees/${empno}`;
+                    method = 'PUT';
+                }
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    // alert('Success!');
+                    closeDrawer();
+                    loadEmployees(); // Refresh Table
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Failed to save employee');
+            }
+        }
+
+        // Remove error style on input
+        // Flatpickr Init
+        const datePicker = flatpickr("#hiredateInput", {
+            dateFormat: "Y-m-d",
+            allowInput: true
+        });
+
+        async function deleteEmployee() {
+            if (!confirm('정말로 이 직원을 삭제하시겠습니까?')) return;
+
+            const empnoInput = document.getElementById('empnoInput');
+            if (!empnoInput) {
+                alert('Error: empnoInput element not found!');
+                return;
+            }
+            const empno = empnoInput.value;
+
+
+            if (!empno) {
+                alert('Error: Employee Number is missing!');
+                return;
+            }
+
+            try {
+
+                const res = await fetch(`/api/employees/${empno}`, { method: 'DELETE' });
+
+                const result = await res.json();
+
+
+                if (result.success) {
+                    closeDrawer();
+                    loadEmployees();
+                } else {
+                    alert('Error: ' + (result.message || result.error));
+                }
+            } catch (err) {
+                console.error('Delete error:', err);
+                alert('Failed to delete employee: ' + err.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

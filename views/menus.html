@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>메뉴 관리 - Dams PLUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 h-screen flex overflow-hidden transition-colors duration-300">
+
+    <!-- SIDEBAR -->
+
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- HEADER -->
+
+        <main
+            class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 transition-colors duration-300">
+
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center space-x-4">
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white">메뉴 설정</h2>
+                </div>
+                <!-- Tools -->
+                <div class="flex space-x-2">
+                    <button onclick="openCreateDrawer()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center">
+                        <i class="fa-solid fa-plus mr-2"></i> 메뉴 등록
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div
+                class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-center text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider w-20">
+                                    관리</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    메뉴명</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    상위 메뉴</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    URL</th>
+                                <th
+                                    class="px-6 py-3 text-center text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    순서</th>
+                                <th
+                                    class="px-6 py-3 text-center text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    사용여부</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+                            id="menuTableBody">
+                            <!-- JS Generated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Drawer -->
+    <div id="drawer-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity"
+        onclick="closeDrawer()"></div>
+    <div id="drawer"
+        class="fixed inset-y-0 right-0 w-96 bg-white dark:bg-gray-800 shadow-xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
+
+        <div
+            class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700">
+            <h2 id="drawerTitle" class="text-lg font-bold text-gray-800 dark:text-white">메뉴 등록</h2>
+            <button onclick="closeDrawer()"
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6">
+            <input type="hidden" id="menuId">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">상위 메뉴</label>
+                    <select id="parentId"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm py-2 px-3">
+                        <option value="">최상위 메뉴</option>
+                        <!-- Options filled by JS -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">메뉴명 <span
+                            class="text-red-500">*</span></label>
+                    <input type="text" id="menuName"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm py-2 px-3"
+                        required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">URL</label>
+                    <input type="text" id="menuUrl" placeholder="/path/to/page"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm py-2 px-3">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">순서</label>
+                    <input type="number" id="sortOrder" value="0"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm py-2 px-3">
+                </div>
+                <div class="flex items-center mt-4">
+                    <input type="checkbox" id="isUse"
+                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+                    <label for="isUse" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">사용 여부</label>
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex justify-end space-x-3">
+            <button id="btnDelete" onclick="deleteMenu()"
+                class="hidden px-4 py-2 border border-red-300 text-red-700 rounded-md text-sm font-medium hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-red-500">삭제</button>
+            <button onclick="closeDrawer()"
+                class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">취소</button>
+            <button onclick="saveMenu()"
+                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">저장</button>
+        </div>
+    </div>
+
+    <script src="/js/layout.js"></script>
+    <script>
+        loadLayout('메뉴 관리'); // 페이지 타이틀 설정
+
+        let allMenus = [];
+        let isEditMode = false;
+
+        async function loadMenus() {
+            try {
+                const res = await fetch('/api/menus');
+                allMenus = await res.json();
+                renderTable(allMenus);
+                updateParentOptions(allMenus);
+            } catch (err) {
+                console.error(err);
+                if (window.showToast) showToast('Failed to load menus', 'error');
+            }
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('menuTableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(menu => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700 transition transition-colors';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <button onclick="openEditDrawer(${menu.menu_id})" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 focus:outline-none">
+                            <i class="fa-regular fa-pen-to-square"></i>
+                        </button>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white" style="padding-left: ${menu.parent_id ? '40px' : '24px'}">
+                        ${menu.parent_id ? '<i class="fa-solid fa-turn-up rotate-90 mr-2 text-gray-400"></i>' : ''} ${menu.menu_name}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${menu.parent_name || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${menu.url || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500 dark:text-gray-400">${menu.sort_order}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                         <span class="inline-flex items-center rounded-md ${menu.is_use ? 'bg-green-50 text-green-700 ring-green-600/20' : 'bg-red-50 text-red-700 ring-red-600/20'} px-2 py-1 text-xs font-medium ring-1 ring-inset">
+                            ${menu.is_use ? '사용' : '미사용'}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateParentOptions(data) {
+            const select = document.getElementById('parentId');
+            // Keep first option (Root)
+            select.innerHTML = '<option value="">최상위 메뉴</option>';
+
+            // Allow selecting only top-level menus as parents for now (to keep depth 2)
+            // Or allow any
+            data.filter(m => !m.parent_id).forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.menu_id;
+                opt.textContent = m.menu_name;
+                select.appendChild(opt);
+            });
+        }
+
+        // --- Drawer Logic ---
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('drawer-overlay');
+        const drawerTitle = document.getElementById('drawerTitle');
+        const btnDelete = document.getElementById('btnDelete');
+
+        function openCreateDrawer() {
+            isEditMode = false;
+            drawerTitle.textContent = "메뉴 등록";
+            btnDelete.classList.add('hidden');
+
+            // Reset Form (excluding parent options)
+            document.getElementById('menuId').value = '';
+            document.getElementById('menuName').value = '';
+            document.getElementById('menuUrl').value = '';
+            document.getElementById('sortOrder').value = '0';
+            document.getElementById('parentId').value = '';
+            document.getElementById('isUse').checked = true;
+
+            drawer.classList.remove('translate-x-full');
+            overlay.classList.remove('hidden');
+            setTimeout(() => overlay.classList.remove('opacity-0'), 10); // Fade in
+        }
+
+        function openEditDrawer(id) {
+            const menu = allMenus.find(m => m.menu_id === id);
+            if (!menu) return;
+
+            isEditMode = true;
+            drawerTitle.textContent = "메뉴 수정";
+            btnDelete.classList.remove('hidden');
+
+            document.getElementById('menuId').value = menu.menu_id;
+            document.getElementById('menuName').value = menu.menu_name;
+            document.getElementById('menuUrl').value = menu.url || '';
+            document.getElementById('sortOrder').value = menu.sort_order;
+            document.getElementById('parentId').value = menu.parent_id || '';
+            document.getElementById('isUse').checked = menu.is_use;
+
+            drawer.classList.remove('translate-x-full');
+            overlay.classList.remove('hidden');
+            setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+        }
+
+        function closeDrawer() {
+            drawer.classList.add('translate-x-full');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => overlay.classList.add('hidden'), 300);
+        }
+
+        async function saveMenu() {
+            const id = document.getElementById('menuId').value;
+            const data = {
+                menu_name: document.getElementById('menuName').value,
+                url: document.getElementById('menuUrl').value,
+                parent_id: document.getElementById('parentId').value || null,
+                sort_order: parseInt(document.getElementById('sortOrder').value) || 0,
+                is_use: document.getElementById('isUse').checked
+            };
+
+            if (!data.menu_name) {
+                if (window.showToast) showToast('메뉴명을 입력해주세요', 'warning');
+                return;
+            }
+
+            try {
+                let res;
+                if (isEditMode) {
+                    res = await fetch(`/api/menus/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                } else {
+                    res = await fetch('/api/menus', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                }
+
+                const result = await res.json();
+                if (result.success) {
+                    if (window.showToast) showToast('저장되었습니다', 'success');
+                    closeDrawer();
+                    loadMenus();
+                } else {
+                    if (window.showToast) showToast(result.error || '실패했습니다', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                if (window.showToast) showToast('Error saving menu', 'error');
+            }
+        }
+
+        async function deleteMenu() {
+            if (!confirm("정말 삭제하시겠습니까? 하위 메뉴가 있는 경우 삭제되지 않을 수 있습니다.")) return;
+            const id = document.getElementById('menuId').value;
+            try {
+                const res = await fetch(`/api/menus/${id}`, { method: 'DELETE' });
+                const result = await res.json();
+                if (result.success) {
+                    if (window.showToast) showToast('삭제되었습니다', 'success');
+                    closeDrawer();
+                    loadMenus();
+                } else {
+                    if (window.showToast) showToast(result.error || result.message, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                if (window.showToast) showToast('Error deleting menu', 'error');
+            }
+        }
+
+        // Init
+        loadMenus();
+
+    </script>
+</body>
+
+</html>

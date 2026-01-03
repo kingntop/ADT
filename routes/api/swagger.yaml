@@ -1,0 +1,125 @@
+openapi: 3.0.0
+info:
+  title: Dams PLUS External API
+  description: Public REST API for accessing employee and department data.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local Development Server
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /v1/employees:
+    get:
+      summary: List all employees
+      description: Retrieve a list of all employees in the organization.
+      tags:
+        - Employees
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  count:
+                    type: integer
+                    example: 14
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        empno:
+                          type: integer
+                        ename:
+                          type: string
+                        job:
+                          type: string
+                        mgr:
+                          type: integer
+                          nullable: true
+                        hiredate:
+                          type: string
+                          format: date
+                          example: "1981-11-17"
+                        sal:
+                          type: string
+                          description: Salary (Decimal as string)
+                        comm:
+                          type: string
+                          nullable: true
+                          description: Commission (Decimal as string)
+                        deptno:
+                          type: integer
+        '401':
+          description: Unauthorized (Invalid or Missing API Key)
+
+  /v1/departments:
+    get:
+      summary: List all departments with employees
+      description: Retrieve a hierarchy of departments and their associated employees.
+      tags:
+        - Departments
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  count:
+                    type: integer
+                    example: 3
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        deptno:
+                          type: integer
+                        dname:
+                          type: string
+                        loc:
+                          type: string
+                        employees:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              empno:
+                                type: integer
+                              ename:
+                                type: string
+                              job:
+                                type: string
+                              mgr:
+                                type: integer
+                                nullable: true
+                              hiredate:
+                                type: string
+                                format: date
+                              sal:
+                                type: string
+                              comm:
+                                type: string
+                                nullable: true
+        '401':
+          description: Unauthorized (Invalid or Missing API Key)
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key

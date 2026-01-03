@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 키 관리 - Dams PLUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 h-screen flex overflow-hidden transition-colors duration-300">
+
+    <!-- SIDEBAR -->
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        <!-- HEADER -->
+
+        <!-- Content -->
+        <main
+            class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 transition-colors duration-300">
+
+            <!-- Toolbar -->
+            <div
+                class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6 flex items-center justify-between transition-colors">
+                <div class="flex space-x-2">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input type="text" placeholder="Search keys..." id="searchInput"
+                            class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-64 bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 transition-colors">
+                    </div>
+                </div>
+                <button onclick="openDrawer()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded shadow-sm text-sm transition-colors">
+                    Generate Key
+                </button>
+            </div>
+
+            <!-- Table -->
+            <div
+                class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    키 이름</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    API 키</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    직원</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    상태</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    만료일</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    생성일</th>
+                                <th
+                                    class="px-6 py-3 text-right text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    관리</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+                            id="keysTableBody">
+                            <!-- Rows loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Drawer Overlay -->
+    <div id="drawerOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-40 transition-opacity"
+        onclick="closeDrawer()"></div>
+
+    <!-- Drawer -->
+    <div id="keyDrawer"
+        class="fixed inset-y-0 right-0 w-96 bg-white dark:bg-gray-800 shadow-xl transform translate-x-full transition-transform duration-300 z-50 flex flex-col transition-colors">
+        <div
+            class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700 transition-colors">
+            <h2 class="text-lg font-bold text-gray-800 dark:text-white">API 키 생성</h2>
+            <button onclick="closeDrawer()"
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+            <form id="createKeyForm">
+                <!-- Employee -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Employee</label>
+                    <select name="empno" id="empSelect" required
+                        class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-700 dark:text-white transition-colors">
+                        <option value="">Select Employee</option>
+                    </select>
+                </div>
+
+                <!-- Key Name -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Key Name</label>
+                    <input type="text" name="key_name" placeholder="e.g. Mobile App Key"
+                        class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 transition-colors">
+                </div>
+
+                <!-- Expires At -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Expires At
+                        (Optional)</label>
+                    <input type="text" name="expires_at" id="expiresInput" placeholder="Select date..."
+                        class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 cursor-pointer transition-colors">
+                </div>
+            </form>
+        </div>
+
+        <div
+            class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex justify-end transition-colors">
+            <button onclick="closeDrawer()"
+                class="px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded mr-2 text-sm font-medium transition-colors">Cancel</button>
+            <button onclick="submitKey()"
+                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium transition-colors">Generate</button>
+        </div>
+    </div>
+
+    <!-- New Key Modal -->
+    <div id="newKeyModal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden z-[60] flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6 transition-colors">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">API Key Generated</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Please copy your API key now. You won't be able to
+                see it again.</p>
+
+            <div class="relative mb-6">
+                <input type="text" id="generatedKeyInput" readonly
+                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 font-mono">
+                <button onclick="copyKey()"
+                    class="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800 text-sm font-medium px-2">
+                    Copy
+                </button>
+            </div>
+
+            <div class="flex justify-end">
+                <button onclick="closeModal()"
+                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/layout.js"></script>
+    <script>
+        loadLayout('API 키 관리');
+
+        async function loadKeys() {
+            try {
+                const res = await fetch('/api/keys');
+                const data = await res.json();
+                const tbody = document.getElementById('keysTableBody');
+                tbody.innerHTML = '';
+
+                data.forEach(key => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700 transition transition-colors';
+
+                    const isRevoked = key.status === 'REVOKED';
+                    const statusClass = isRevoked ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+                    const displayKey = key.api_key.substring(0, 8) + '...';
+
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">${key.key_name || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">${displayKey}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${key.ename || 'Unknown'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                                ${key.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${key.expires_at || 'Never'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${key.created_at}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            ${!isRevoked ? `<button onclick="revokeKey(${key.key_id})" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 mr-3">Revoke</button>` : ''}
+                            <button onclick="deleteKey(${key.key_id})" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        loadKeys();
+
+        // Drawer
+        const drawer = document.getElementById('keyDrawer');
+        const overlay = document.getElementById('drawerOverlay');
+
+        async function openDrawer() {
+            // Load employees
+            const res = await fetch('/api/employees');
+            const emps = await res.json();
+            const select = document.getElementById('empSelect');
+            select.innerHTML = '<option value="">Select Employee</option>';
+            emps.forEach(e => {
+                select.innerHTML += `<option value="${e.empno}">${e.ename}</option>`;
+            });
+
+            document.getElementById('createKeyForm').reset();
+            drawer.classList.remove('translate-x-full');
+            overlay.classList.remove('hidden');
+        }
+
+        function closeDrawer() {
+            drawer.classList.add('translate-x-full');
+            overlay.classList.add('hidden');
+        }
+
+        // Flatpickr
+        flatpickr("#expiresInput", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            minDate: "today"
+        });
+
+        async function submitKey() {
+            const form = document.getElementById('createKeyForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            if (!data.empno) return alert('Please select an employee');
+
+            try {
+                const res = await fetch('/api/keys', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    closeDrawer();
+                    loadKeys();
+                    showNewKey(result.plain_key);
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('On submit key error');
+            }
+        }
+
+        // Actions
+        async function revokeKey(id) {
+            if (!confirm('Are you sure you want to revoke this key?')) return;
+            try {
+                const res = await fetch(`/api/keys/${id}/revoke`, { method: 'PUT' });
+                loadKeys();
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteKey(id) {
+            if (!confirm('Delete this key permanently?')) return;
+            try {
+                const res = await fetch(`/api/keys/${id}`, { method: 'DELETE' });
+                loadKeys();
+            } catch (err) { console.error(err); }
+        }
+
+        // New Key Modal
+        function showNewKey(key) {
+            document.getElementById('generatedKeyInput').value = key;
+            document.getElementById('newKeyModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('newKeyModal').classList.add('hidden');
+        }
+
+        function copyKey() {
+            const copyText = document.getElementById("generatedKeyInput");
+            copyText.select();
+            navigator.clipboard.writeText(copyText.value);
+            // alert("Copied the key: " + copyText.value);
+        }
+    </script>
+</body>
+
+</html>

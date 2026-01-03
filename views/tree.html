@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>조직도 - Dams PLUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Tree Specific Styles */
+        .tree-node {
+            position: relative;
+        }
+
+        .node-content {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .node-content:hover {
+            background-color: #f3f4f6;
+        }
+
+        :is(.dark .node-content:hover) {
+            background-color: #374151;
+        }
+
+        /* Selected state style if needed */
+        .node-content.selected {
+            background-color: #e5e7eb;
+        }
+
+        :is(.dark .node-content.selected) {
+            background-color: #4b5563;
+        }
+
+        .node-icon-toggle {
+            width: 20px;
+            display: inline-flex;
+            justify-content: center;
+            margin-right: 4px;
+            color: #6b7280;
+            transition: transform 0.2s;
+        }
+
+        :is(.dark .node-icon-toggle) {
+            color: #9ca3af;
+        }
+
+        .collapsed .node-icon-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .node-icon-type {
+            margin-right: 8px;
+            color: #374151;
+        }
+
+        :is(.dark .node-icon-type) {
+            color: #d1d5db;
+        }
+
+        .children-container {
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .hidden-children {
+            display: none !important;
+        }
+
+        /* For Search Highlighting */
+        .search-match>.node-content {
+            background-color: #fffbeb;
+            border: 1px solid #fcd34d;
+        }
+
+        :is(.dark .search-match>.node-content) {
+            background-color: #78350f;
+            border-color: #b45309;
+        }
+
+        /* Checkbox style */
+        .custom-checkbox {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            cursor: pointer;
+        }
+
+        :is(.dark .custom-checkbox) {
+            background-color: #374151;
+            border-color: #4b5563;
+        }
+
+        .custom-checkbox.checked {
+            background-color: #2563eb;
+            border-color: #2563eb;
+            color: white;
+        }
+
+        :is(.dark .custom-checkbox.checked) {
+            background-color: #3b82f6;
+            /* Blue 500 equivalent for better visibility */
+            border-color: #3b82f6;
+        }
+
+        .custom-checkbox i {
+            font-size: 10px;
+            display: none;
+        }
+
+        .custom-checkbox.checked i {
+            display: block;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 h-screen flex overflow-hidden transition-colors duration-300">
+
+    <!-- SIDEBAR -->
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        <!-- HEADER -->
+
+        <main
+            class="flex-1 overflow-x-hidden overflow-y-auto bg-white dark:bg-gray-900 p-6 transition-colors duration-300">
+            <div class="w-full">
+
+                <!-- Toolbar -->
+                <div class="flex items-center space-x-4 mb-4">
+                    <!-- Search -->
+                    <div class="flex-1 relative">
+                        <input type="text" id="treeSearch" placeholder="Search..." oninput="filterTree(this.value)"
+                            class="w-full pl-4 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm text-sm bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 transition-colors">
+                        <div
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex space-x-2">
+                        <button onclick="expandAll()" title="Expand All"
+                            class="w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm text-gray-700 dark:text-gray-200 transition-colors">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                        <button onclick="collapseAll()" title="Collapse All"
+                            class="w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm text-gray-700 dark:text-gray-200 transition-colors">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <button onclick="checkAll()" title="Check All"
+                            class="w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm text-gray-700 dark:text-gray-200 transition-colors">
+                            <i class="fa-regular fa-square-check"></i>
+                        </button>
+                        <button onclick="uncheckAll()" title="Uncheck All"
+                            class="w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm text-gray-700 dark:text-gray-200 transition-colors">
+                            <i class="fa-regular fa-square"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Grid Container -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Tree Container -->
+                    <div id="tree-root"
+                        class="lg:col-span-4 border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm min-h-[500px] overflow-auto transition-colors">
+                        <!-- injected by JS -->
+                    </div>
+
+                    <!-- Chart Container -->
+                    <div
+                        class="lg:col-span-8 border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm flex flex-col transition-colors">
+                        <h3
+                            class="text-lg font-bold text-gray-700 dark:text-white mb-4 border-b dark:border-gray-700 pb-2 transition-colors">
+                            Department Salaries</h3>
+                        <div id="salaryChart" class="flex-1 min-h-[400px]">
+                            <div class="h-full flex items-center justify-center text-gray-400">
+                                Select an employee to view department salaries
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <script src="/js/layout.js"></script>
+    <script>
+        loadLayout('조직도');
+
+        let rawData = [];
+        let nodeMap = {};
+
+        async function loadTree() {
+            try {
+                const res = await fetch('/api/tree');
+                const data = await res.json();
+                rawData = data;
+                renderTree(data);
+            } catch (err) {
+                console.error(err);
+                if (window.showToast) showToast("Failed to load tree data", 'error');
+            }
+        }
+
+        function renderTree(data) {
+            const container = document.getElementById('tree-root');
+            container.innerHTML = '';
+            nodeMap = {};
+
+            const map = {};
+            const roots = [];
+
+            // 1. Initialize nodes
+            data.forEach(node => {
+                map[node.value] = { ...node, children: [], checked: false };
+                nodeMap[node.value] = map[node.value]; // Save ref for search
+            });
+
+            // 2. Build Hierarchy
+            data.forEach(node => {
+                if (node.level === 1) {
+                    roots.push(map[node.value]);
+                } else {
+                    if (node.mgr && map[node.mgr]) {
+                        map[node.mgr].children.push(map[node.value]);
+                    }
+                }
+            });
+
+            // Helper to sort nodes: Leaves first, then Folders (Managers), then Alphabetical
+            const sortNodes = (nodes) => {
+                nodes.sort((a, b) => {
+                    const aIsLeaf = a.children.length === 0;
+                    const bIsLeaf = b.children.length === 0;
+
+                    // 1. Sort by Type (Leaf first)
+                    if (aIsLeaf && !bIsLeaf) return -1;
+                    if (!aIsLeaf && bIsLeaf) return 1;
+
+                    // 2. Sort by Title (Alphabetical)
+                    return a.title.localeCompare(b.title);
+                });
+
+                // Recursive sort for children
+                nodes.forEach(node => {
+                    if (node.children.length > 0) {
+                        sortNodes(node.children);
+                    }
+                });
+            };
+
+            // Apply Sort
+            sortNodes(roots);
+
+            // 3. Render Recursive
+            roots.forEach(root => {
+                container.appendChild(createNodeEl(root));
+            });
+        }
+
+        function createNodeEl(node) {
+            const wrapper = document.createElement('div');
+            wrapper.className = `tree-node`;
+            wrapper.dataset.id = node.value;
+            node.element = wrapper; // Store ref
+
+            const isLeaf = node.children.length === 0;
+
+            // Content Row
+            const content = document.createElement('div');
+            content.className = 'node-content';
+            content.style.paddingLeft = `${(node.level - 1) * 24}px`; // Indent
+
+            // Drag Properties
+            content.draggable = true;
+            content.addEventListener('dragstart', handleDragStart);
+            content.addEventListener('dragover', handleDragOver);
+            content.addEventListener('dragleave', handleDragLeave);
+            content.addEventListener('drop', handleDrop);
+            content.dataset.id = node.value;
+
+            // 1. Toggle Icon (Arrow)
+            const toggleIcon = document.createElement('span');
+            toggleIcon.className = 'node-icon-toggle';
+            if (!isLeaf) {
+                toggleIcon.innerHTML = '<i class="fa-solid fa-caret-down"></i>';
+                toggleIcon.onclick = (e) => {
+                    e.stopPropagation();
+                    toggleNode(wrapper);
+                };
+            } else {
+                toggleIcon.innerHTML = ''; // spacer
+            }
+
+            // 2. Checkbox
+            const checkbox = document.createElement('div');
+            checkbox.className = 'custom-checkbox';
+            checkbox.innerHTML = '<i class="fa-solid fa-check"></i>';
+            checkbox.onclick = (e) => {
+                e.stopPropagation();
+                toggleCheckbox(node, checkbox);
+            };
+            node.checkboxEl = checkbox; // Store ref
+
+            // 3. Type Icon (Folder/File)
+            const typeIcon = document.createElement('span');
+            typeIcon.className = 'node-icon-type';
+            // Logic: Leaf = File, Parent = Folder
+            if (isLeaf) {
+                typeIcon.innerHTML = '<i class="fa-regular fa-file"></i>';
+            } else {
+                typeIcon.innerHTML = '<i class="fa-regular fa-folder-open"></i>'; // Open by default
+                node.typeIconEl = typeIcon;
+            }
+
+            // 4. Title
+            const title = document.createElement('span');
+            title.className = 'text-sm font-medium text-gray-700 dark:text-gray-200 select-none pointer-events-none transition-colors'; // pointer-events-none to prevent selecting text while dragging
+            title.textContent = node.title;
+
+            // Assemble
+            content.appendChild(toggleIcon);
+            content.appendChild(checkbox);
+            content.appendChild(typeIcon);
+            content.appendChild(title);
+
+            // Toggle children on toggle icon click
+            // Content click loads chart
+            content.onclick = () => {
+                // Visual selection
+                document.querySelectorAll('.node-content').forEach(el => el.classList.remove('bg-blue-50', 'ring-1', 'ring-blue-300', 'dark:bg-blue-900', 'dark:ring-blue-500'));
+                content.classList.add('bg-blue-50', 'ring-1', 'ring-blue-300', 'dark:bg-blue-900', 'dark:ring-blue-500');
+
+                loadSalaryChart(node.value);
+            };
+
+            wrapper.appendChild(content);
+
+            // Children Container
+            if (!isLeaf) {
+                const childrenContainer = document.createElement('div');
+                childrenContainer.className = 'children-container';
+
+                node.children.forEach(child => {
+                    childrenContainer.appendChild(createNodeEl(child));
+                });
+                wrapper.appendChild(childrenContainer);
+            }
+
+            return wrapper;
+        }
+
+        // --- Drag and Drop Handlers ---
+        let draggedId = null;
+
+        function handleDragStart(e) {
+            draggedId = this.dataset.id;
+            e.dataTransfer.effectAllowed = 'move';
+            // Visual feedback
+            this.classList.add('opacity-50');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault(); // Necessary to allow dropping
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('bg-blue-100', 'dark:bg-blue-800'); // Highlight target
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('bg-blue-100', 'dark:bg-blue-800');
+        }
+
+        async function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('bg-blue-100', 'dark:bg-blue-800');
+            // Restore dragged opacity
+            const draggedEl = document.querySelector(`.tree-node[data-id="${draggedId}"] .node-content`);
+            if (draggedEl) draggedEl.classList.remove('opacity-50');
+
+            const targetId = this.dataset.id;
+
+            if (draggedId === targetId) return; // Dropped on self
+
+            // Determine items to move
+            let itemsToMove = [];
+
+            // Check if ANY item is checked
+            const allNodes = Object.values(nodeMap);
+            const checkedNodes = allNodes.filter(n => n.checked);
+
+            if (checkedNodes.length > 0) {
+                // If dragged item is NOT part of checked nodes, user might be confused.
+                // Standard logic: If specific dragged item is Checked, move all Checked.
+                // If dragged item is NOT Checked, move ONLY dragged item (and ignore checks or clear them?).
+                // Let's go with: If Dragged Item is Checked, move ALL Checked. Else move ONLY Dragged.
+
+                const draggedNode = nodeMap[draggedId];
+                if (draggedNode && draggedNode.checked) {
+                    itemsToMove = checkedNodes.map(n => n.value);
+                } else {
+                    itemsToMove = [draggedId];
+                }
+            } else {
+                itemsToMove = [draggedId];
+            }
+
+            // Confirm?
+            if (!confirm(`Move ${itemsToMove.length} employee(s) to under ${nodeMap[targetId].title}?`)) return;
+
+            // API Call
+            try {
+                const res = await fetch('/api/tree/move', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ empnos: itemsToMove, targetMgr: targetId })
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    if (window.showToast) showToast(result.message, 'success');
+                    loadTree(); // Refresh
+                } else {
+                    if (window.showToast) showToast(result.message, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                if (window.showToast) showToast('Move failed', 'error');
+            }
+        }
+
+        function toggleNode(nodeEl) {
+            const toggleIcon = nodeEl.querySelector('.node-icon-toggle i');
+            const typeIcon = nodeEl.querySelector('.node-icon-type i');
+            const childrenContainer = nodeEl.querySelector('.children-container');
+
+            if (childrenContainer && childrenContainer.classList.contains('hidden-children')) {
+                // Expand
+                childrenContainer.classList.remove('hidden-children');
+                nodeEl.classList.remove('collapsed');
+                if (toggleIcon) toggleIcon.className = "fa-solid fa-caret-down";
+                if (typeIcon) typeIcon.className = "fa-regular fa-folder-open";
+            } else if (childrenContainer) {
+                // Collapse
+                childrenContainer.classList.add('hidden-children');
+                nodeEl.classList.add('collapsed');
+                if (toggleIcon) toggleIcon.className = "fa-solid fa-caret-right";
+                if (typeIcon) typeIcon.className = "fa-regular fa-folder";
+            }
+        }
+
+        // --- Checkbox Logic ---
+        function toggleCheckbox(node, el) {
+            node.checked = !node.checked;
+            updateCheckboxVisual(node);
+
+            // Cascading check (optional but common)
+            // For now, let's just toggle individual or should we cascade?
+            // User didn't specify, but standard tree usually cascades down.
+            // Let's implement cascade down for better UX.
+            setChildrenCheck(node, node.checked);
+        }
+
+        function setChildrenCheck(node, status) {
+            node.children.forEach(child => {
+                child.checked = status;
+                updateCheckboxVisual(child);
+                setChildrenCheck(child, status);
+            });
+        }
+
+        function updateCheckboxVisual(node) {
+            if (!node.checkboxEl) return;
+            if (node.checked) {
+                node.checkboxEl.classList.add('checked');
+            } else {
+                node.checkboxEl.classList.remove('checked');
+            }
+        }
+
+        function checkAll() {
+            Object.values(nodeMap).forEach(node => {
+                node.checked = true;
+                updateCheckboxVisual(node);
+            });
+        }
+
+        function uncheckAll() {
+            Object.values(nodeMap).forEach(node => {
+                node.checked = false;
+                updateCheckboxVisual(node);
+            });
+        }
+
+        // --- Toolbar Logic ---
+        function expandAll() {
+            document.querySelectorAll('.children-container').forEach(el => el.classList.remove('hidden-children'));
+            document.querySelectorAll('.tree-node').forEach(el => {
+                el.classList.remove('collapsed');
+                const tIcon = el.querySelector('.node-icon-type i');
+                if (tIcon) tIcon.className = "fa-regular fa-folder-open";
+            });
+            document.querySelectorAll('.node-icon-toggle i').forEach(el => el.className = "fa-solid fa-caret-down");
+        }
+
+        function collapseAll() {
+            document.querySelectorAll('.children-container').forEach(el => el.classList.add('hidden-children'));
+            document.querySelectorAll('.tree-node').forEach(el => {
+                el.classList.add('collapsed')
+                const tIcon = el.querySelector('.node-icon-type i');
+                if (tIcon) tIcon.className = "fa-regular fa-folder";
+            });
+            document.querySelectorAll('.node-icon-toggle i').forEach(el => el.className = "fa-solid fa-caret-right");
+
+            // Keep Level 1 Open? or collapse everything including root children? 
+            // "Collapse All" usually implies everything.
+        }
+
+        // --- Search Logic ---
+        function filterTree(text) {
+            const term = text.toLowerCase();
+            if (!term) {
+                // clear filter
+                document.querySelectorAll('.tree-node').forEach(el => {
+                    el.classList.remove('hidden', 'search-match');
+                    el.style.display = '';
+                });
+                return;
+            }
+
+            // Simple filtering: 
+            // 1. Hide all nodes
+            // 2. Find matches
+            // 3. Show matches and walk up to show parents
+
+            const allNodes = Object.values(nodeMap);
+            allNodes.forEach(n => {
+                if (n.element) {
+                    n.element.style.display = 'none';
+                    n.element.classList.remove('search-match');
+                }
+            });
+
+            const updatedParents = new Set();
+
+            allNodes.forEach(node => {
+                if (node.title.toLowerCase().includes(term)) {
+                    // Match found
+                    showNodeAndParents(node, updatedParents);
+                    if (node.element) node.element.classList.add('search-match');
+                }
+            });
+
+            // Expand parents that were shown
+            updatedParents.forEach(node => {
+                // Ensure expanded
+                if (node.element) {
+                    const childrenContainer = node.element.querySelector('.children-container');
+                    if (childrenContainer) childrenContainer.classList.remove('hidden-children');
+
+                    const toggleIcon = node.element.querySelector('.node-icon-toggle i');
+                    if (toggleIcon) toggleIcon.className = "fa-solid fa-caret-down";
+
+                    const typeIcon = node.element.querySelector('.node-icon-type i');
+                    if (typeIcon) typeIcon.className = "fa-regular fa-folder-open";
+                }
+            });
+        }
+
+        function showNodeAndParents(node, parentSet) {
+            if (!node) return;
+            if (node.element) node.element.style.display = 'block';
+
+            if (node.mgr && nodeMap[node.mgr]) {
+                parentSet.add(nodeMap[node.mgr]);
+                showNodeAndParents(nodeMap[node.mgr], parentSet);
+            }
+        }
+
+
+
+        let chartInstance = null;
+
+        async function loadSalaryChart(empno) {
+            const chartDiv = document.getElementById('salaryChart');
+
+            // Show loading
+            chartDiv.innerHTML = '<div class="h-full flex items-center justify-center text-blue-500"><i class="fa-solid fa-circle-notch fa-spin text-2xl"></i></div>';
+
+            try {
+                const res = await fetch(`/api/tree/stats/salary/${empno}`);
+                const result = await res.json();
+
+                // Clean container
+                chartDiv.innerHTML = '';
+
+                if (result.error) throw new Error(result.error);
+                if (!result.data || result.data.length === 0) {
+                    chartDiv.innerHTML = '<div class="h-full flex items-center justify-center text-gray-400">No data available</div>';
+                    return;
+                }
+
+                if (chartInstance) chartInstance.dispose();
+
+                // Determine theme
+                const isDark = document.documentElement.classList.contains('dark');
+                chartInstance = echarts.init(chartDiv, isDark ? 'dark' : undefined, {
+                    renderer: 'svg'
+                });
+
+                if (isDark) {
+                    // ECharts 'dark' theme sometimes has a specific background color, 
+                    // but we might want it transparent to match our container.
+                    // However, passing 'dark' usually sets a nice dark bg. 
+                    // Let's rely on standard dark theme or configure transparent.
+                    // A safe bet is using 'dark' theme but forcing background to 'transparent'
+                    // so our container color shines through.
+                    chartInstance.setOption({ backgroundColor: 'transparent' });
+                }
+
+                const option = {
+                    backgroundColor: 'transparent',
+                    title: {
+                        text: `${result.department} 부서 급여 현황`,
+                        subtext: `선택: ${result.target}`,
+                        left: 'center',
+                        textStyle: {
+                            color: isDark ? '#fff' : '#333'
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: { type: 'shadow' }
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: result.data.map(item => item.ename),
+                        axisLabel: {
+                            interval: 0,
+                            rotate: 30,
+                            color: isDark ? '#ccc' : '#333'
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: '급여',
+                        axisLabel: {
+                            color: isDark ? '#ccc' : '#333'
+                        },
+                        nameTextStyle: {
+                            color: isDark ? '#ccc' : '#333'
+                        }
+                    },
+                    series: [
+                        {
+                            name: '급여',
+                            type: 'bar',
+                            data: result.data.map(item => {
+                                return {
+                                    value: item.sal,
+                                    itemStyle: {
+                                        color: item.ename === result.target ? '#f59e0b' : '#3b82f6' // Highlight selected
+                                    }
+                                };
+                            }),
+                            label: {
+                                show: true,
+                                position: 'insideTop',
+                                color: '#fff',
+                                formatter: function (params) {
+                                    return Number(params.value).toFixed(2);
+                                }
+                            }
+                        }
+                    ]
+                };
+
+                chartInstance.setOption(option);
+
+                // Resize listener
+                window.addEventListener('resize', () => chartInstance.resize());
+
+            } catch (err) {
+                console.error(err);
+                chartDiv.innerHTML = `<div class="h-full flex items-center justify-center text-red-500">Error: ${err.message}</div>`;
+            }
+        }
+
+        loadTree();
+    </script>
+</body>
+
+</html>

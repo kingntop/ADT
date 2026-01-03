@@ -1,0 +1,191 @@
+<aside id="sidebar" class="w-64 bg-gray-800 text-white flex flex-col flex-shrink-0 transition-all duration-300">
+    <div class="h-16 flex items-center px-6 bg-gray-900 border-b border-gray-700 dark:border-gray-600">
+        <button onclick="toggleSidebar()" class="text-white hover:text-gray-300 focus:outline-none">
+            <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+        <a href="/dashboard" id="sidebarTitle"
+            class="ml-4 font-bold text-lg whitespace-nowrap overflow-hidden transition-all duration-300">
+            Dams PLUS
+        </a>
+    </div>
+    <nav class="flex-1 px-2 py-4 space-y-2 overflow-y-auto overflow-x-hidden">
+
+        <a href="/dashboard"
+            class="flex items-center px-4 py-2 text-gray-400 hover:bg-gray-700 hover:text-white rounded transition whitespace-nowrap group">
+            <i class="fa-solid fa-chart-line w-6 text-center shrink-0"></i>
+            <span class="sidebar-text ml-3 opacity-100 transition-opacity duration-300">대시보드</span>
+        </a>
+
+        <a href="/employees"
+            class="flex items-center px-4 py-2 text-gray-400 hover:bg-gray-700 hover:text-white rounded transition whitespace-nowrap group">
+            <i class="fa-solid fa-users w-6 text-center shrink-0"></i>
+            <span class="sidebar-text ml-3 opacity-100 transition-opacity duration-300">직원 관리</span>
+        </a>
+        <a href="/departments"
+            class="flex items-center px-4 py-2 text-gray-400 hover:bg-gray-700 hover:text-white rounded transition whitespace-nowrap group">
+            <i class="fa-solid fa-building w-6 text-center shrink-0"></i>
+            <span class="sidebar-text ml-3 opacity-100 transition-opacity duration-300">부서 관리</span>
+        </a>
+        <a href="/search"
+            class="flex items-center px-4 py-2 text-gray-400 hover:bg-gray-700 hover:text-white rounded transition whitespace-nowrap group">
+            <i class="fa-solid fa-magnifying-glass w-6 text-center shrink-0"></i>
+            <span class="sidebar-text ml-3 opacity-100 transition-opacity duration-300">다면 검색</span>
+        </a>
+        <a href="/tree"
+            class="flex items-center px-4 py-2 text-gray-400 hover:bg-gray-700 hover:text-white rounded transition whitespace-nowrap group">
+            <i class="fa-solid fa-sitemap w-6 text-center shrink-0"></i>
+            <span class="sidebar-text ml-3 opacity-100 transition-opacity duration-300">조직도</span>
+        </a>
+        <a href="/images"
+            class="flex items-center px-4 py-2 text-gray-400 hover:bg-gray-700 hover:text-white rounded transition whitespace-nowrap group">
+            <i class="fa-solid fa-images w-6 text-center shrink-0"></i>
+            <span class="sidebar-text ml-3 opacity-100 transition-opacity duration-300">이미지 관리</span>
+        </a>
+        <a href="/tasks"
+            class="flex items-center px-4 py-2 text-gray-400 hover:bg-gray-700 hover:text-white rounded transition whitespace-nowrap group">
+            <i class="fa-solid fa-list-check w-6 text-center shrink-0"></i>
+            <span class="sidebar-text ml-3 opacity-100 transition-opacity duration-300">할 일 목록</span>
+        </a>
+
+
+        <!-- Administration (Group) -->
+        <div id="adminGroup" class="hidden">
+            <button onclick="toggleSubmenu('adminSubmenu')"
+                class="w-full flex items-center justify-between px-4 py-2 text-gray-400 hover:bg-gray-700 hover:text-white rounded transition focus:outline-none whitespace-nowrap group">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-wrench w-6 text-center shrink-0"></i>
+                    <span class="sidebar-text ml-3 opacity-100 transition-opacity duration-300">행정 및 관리</span>
+                </div>
+                <i id="adminArrow"
+                    class="fa-solid fa-chevron-down text-xs transition-transform transform sidebar-text"></i>
+            </button>
+            <div id="adminSubmenu" class="hidden pl-4 mt-1 space-y-1">
+                <a href="/system/menus"
+                    class="flex items-center px-4 py-2 text-sm text-gray-400 hover:text-white rounded transition whitespace-nowrap">
+                    <i class="fa-solid fa-bars-staggered w-5 text-center shrink-0"></i>
+                    <span class="sidebar-text ml-2 opacity-100 transition-opacity duration-300">메뉴 설정</span>
+                </a>
+                <a href="/system/roles"
+                    class="flex items-center px-4 py-2 text-sm text-gray-400 hover:text-white rounded transition whitespace-nowrap">
+                    <i class="fa-solid fa-user-shield w-5 text-center shrink-0"></i>
+                    <span class="sidebar-text ml-2 opacity-100 transition-opacity duration-300">권한 설정</span>
+                </a>
+                <a href="/system/permissions"
+                    class="flex items-center px-4 py-2 text-sm text-gray-400 hover:text-white rounded transition whitespace-nowrap">
+                    <i class="fa-solid fa-shield-halved w-5 text-center shrink-0"></i>
+                    <span class="sidebar-text ml-2 opacity-100 transition-opacity duration-300">메뉴별 권한 관리</span>
+                </a>
+                <a href="/apikeys"
+                    class="flex items-center px-4 py-2 text-sm text-gray-400 hover:text-white rounded transition whitespace-nowrap">
+                    <i class="fa-solid fa-key w-5 text-center shrink-0"></i>
+                    <span class="sidebar-text ml-2 opacity-100 transition-opacity duration-300">API 키 관리</span>
+                </a>
+                <a href="/api_endpoints"
+                    class="flex items-center px-4 py-2 text-sm text-gray-400 hover:text-white rounded transition whitespace-nowrap">
+                    <i class="fa-solid fa-network-wired w-5 text-center shrink-0"></i>
+                    <span class="sidebar-text ml-2 opacity-100 transition-opacity duration-300">API 엔드포인트 관리</span>
+                </a>
+                <a href="/app_users"
+                    class="flex items-center px-4 py-2 text-sm text-gray-400 hover:text-white rounded transition whitespace-nowrap">
+                    <i class="fa-solid fa-users-gear w-5 text-center shrink-0"></i>
+                    <span class="sidebar-text ml-2 opacity-100 transition-opacity duration-300">앱 사용자 관리</span>
+                </a>
+            </div>
+        </div>
+
+        <script>
+            async function toggleSubmenu(id) {
+                const submenu = document.getElementById(id);
+                const arrow = document.getElementById('adminArrow');
+
+                // Check permissions when opening
+                if (submenu.classList.contains('hidden')) {
+                    // Update menu visibility before showing
+                    await updateMenuVisibility();
+
+                    submenu.classList.remove('hidden');
+                    arrow.classList.add('rotate-180');
+                    localStorage.setItem('adminSubmenuOpen', 'true');
+                } else {
+                    submenu.classList.add('hidden');
+                    arrow.classList.remove('rotate-180');
+                    localStorage.setItem('adminSubmenuOpen', 'false');
+                }
+            }
+
+            async function updateMenuVisibility() {
+                try {
+                    const res = await fetch('/api/menus/my-menus');
+                    if (res.ok) {
+                        const allowedMenus = await res.json();
+                        const allowedUrls = allowedMenus.map(m => m.url).filter(u => u);
+                        allowedUrls.push('/dashboard', '/login.html', '/password_change');
+
+                        const links = document.querySelectorAll('nav a');
+                        links.forEach(link => {
+                            const href = link.getAttribute('href');
+                            if (!href) return;
+                            const isAllowed = allowedUrls.some(allowed =>
+                                href === allowed || (allowed !== '/' && href.startsWith(allowed + '/'))
+                            );
+                            if (!isAllowed) {
+                                link.classList.add('hidden');
+                                link.classList.remove('flex');
+                            } else {
+                                link.classList.remove('hidden');
+                                link.classList.add('flex');
+                            }
+                        });
+
+                        // Hide parent if no children visible
+                        const submenu = document.getElementById('adminSubmenu');
+                        if (submenu) {
+                            const adminLinks = submenu.querySelectorAll('a');
+                            const visibleAdminLinks = Array.from(adminLinks).filter(a => !a.classList.contains('hidden'));
+
+                            const adminGroup = document.getElementById('adminGroup');
+                            if (visibleAdminLinks.length > 0) {
+                                // Children exist, show the parent group
+                                if (adminGroup) adminGroup.classList.remove('hidden');
+                            } else {
+                                // No children visible, ensure parent is hidden
+                                if (adminGroup) adminGroup.classList.add('hidden');
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('Failed to update menu permissions', err);
+                }
+            }
+
+            // Initialize Submenu State
+            document.addEventListener('DOMContentLoaded', async () => {
+                const isOpen = localStorage.getItem('adminSubmenuOpen') === 'true';
+                const submenu = document.getElementById('adminSubmenu');
+                const arrow = document.getElementById('adminArrow');
+
+                // Auto-open if current URL matches a child
+                const currentPath = window.location.pathname;
+                const adminPaths = ['/apikeys', '/api_endpoints', '/app_users', '/system'];
+                const shouldBeOpen = isOpen || adminPaths.some(path => currentPath.startsWith(path));
+
+                if (shouldBeOpen) {
+                    submenu.classList.remove('hidden');
+                    arrow.classList.add('rotate-180');
+                    // Ensure localStorage reflects this if it was opened by URL
+                    if (!isOpen) localStorage.setItem('adminSubmenuOpen', 'true');
+                }
+
+                // Filter Menus based on Permissions
+                await updateMenuVisibility();
+            });
+        </script>
+    </nav>
+    <div class="p-4 border-t border-gray-700">
+        <button onclick="window.logout()"
+            class="flex items-center text-gray-400 hover:text-white transition w-full whitespace-nowrap group">
+            <i class="fa-solid fa-right-from-bracket w-6 text-center shrink-0"></i>
+            <span class="sidebar-text ml-3 opacity-100 transition-opacity duration-300">로그아웃</span>
+        </button>
+    </div>
+</aside>

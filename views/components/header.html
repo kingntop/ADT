@@ -1,0 +1,41 @@
+<header
+    class="h-16 bg-white dark:bg-gray-800 dark:border-gray-700 shadow-sm flex items-center justify-between px-6 z-10 w-full transition-colors duration-300">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-white" id="page-title"></h1>
+    <div class="flex items-center space-x-4">
+        <!-- Theme Toggle -->
+        <button id="themeToggle" onclick="toggleTheme()"
+            class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200 rounded-lg p-1.5 transition-colors">
+            <i id="themeIcon" class="fa-solid fa-moon text-xl"></i>
+        </button>
+
+        <div class="relative group">
+            <button
+                class="flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus:outline-none py-2 transition-colors">
+                <span class="mr-2 font-medium" id="userNameDisplay">User</span>
+                <i class="fa-solid fa-circle-user text-2xl"></i>
+                <i class="fa-solid fa-chevron-down ml-1 text-xs"></i>
+            </button>
+            <!-- Dropdown Menu -->
+            <div
+                class="absolute right-0 mt-0 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden group-hover:block border border-gray-100">
+                <a href="/password_change"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">
+                    <i class="fa-solid fa-key mr-2"></i> 비밀번호 변경
+                </a>
+                <a href="#" onclick="window.logout()"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-red-600">
+                    <i class="fa-solid fa-right-from-bracket mr-2"></i> 로그아웃
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+<script>
+    const user = JSON.parse(localStorage.getItem('user'));
+    // We strictly rely on the server 401 for auth check now, but for display we use localStorage.
+    // If not in localStorage, we might just show "User".
+    // Or we could fetch /auth/me if we implemented it.
+    if (user) {
+        document.getElementById('userNameDisplay').textContent = user.ename;
+    }
+</script>

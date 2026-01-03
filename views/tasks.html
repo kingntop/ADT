@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>할 일 목록 - Dams PLUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 h-screen flex overflow-hidden transition-colors duration-300">
+
+    <!-- SIDEBAR -->
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- HEADER -->
+
+        <!-- Content -->
+        <main
+            class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 transition-colors duration-300">
+
+            <!-- Toolbar -->
+            <div
+                class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6 flex items-center justify-between transition-colors">
+                <div class="flex space-x-2">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input type="text" id="searchInput" placeholder="Search tasks..." onkeyup="filterTasks()"
+                            class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-64 bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 transition-colors">
+                    </div>
+                </div>
+                <button onclick="openDrawer()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded shadow-sm text-sm transition-colors">할
+                    일 생성</button>
+            </div>
+
+            <!-- Table -->
+            <div
+                class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th class="w-10 px-6 py-3"></th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    상태</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider w-1/2">
+                                    할 일</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    담당자</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                                    생성일</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+                            id="tasksTableBody">
+                            <!-- Rows loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div
+                    class="bg-gray-50 dark:bg-gray-700 px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end transition-colors">
+                    <span class="text-sm text-gray-700 dark:text-gray-300 mr-4" id="pageInfo"></span>
+                    <div class="inline-flex rounded-md shadow-sm">
+                        <button onclick="prevPage()" id="btnPrev"
+                            class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button onclick="nextPage()" id="btnNext"
+                            class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Drawer Overlay -->
+    <div id="drawerOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-40 transition-opacity"
+        onclick="closeDrawer()"></div>
+
+    <!-- Drawer -->
+    <div id="taskDrawer"
+        class="fixed inset-y-0 right-0 w-96 bg-white dark:bg-gray-800 shadow-xl transform translate-x-full transition-transform duration-300 z-50 flex flex-col transition-colors">
+        <div
+            class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700 transition-colors">
+            <h2 class="text-lg font-bold text-gray-800 dark:text-white" id="drawerTitle">새 작업</h2>
+            <button onclick="closeDrawer()"
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 pt-2">
+            <form id="createTaskForm">
+                <input type="hidden" name="id" id="taskIdInput">
+
+                <!-- Status -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                    <select name="status" id="statusSelect"
+                        class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 focus:ring-blue-500 text-sm bg-white dark:bg-gray-700 dark:text-white transition-colors">
+                        <option value="PENDING">PENDING</option>
+                        <option value="RUNNING">RUNNING</option>
+                        <option value="COMPLETED">COMPLETED</option>
+                    </select>
+                </div>
+
+                <!-- Todo -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">To Do</label>
+                    <textarea name="todo" required rows="4"
+                        class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 focus:ring-blue-500 text-sm bg-gray-50 dark:bg-gray-700 dark:text-white transition-colors"></textarea>
+                </div>
+
+                <!-- Assignee -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Assignee</label>
+                    <select name="empno" id="assigneeSelect"
+                        class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 focus:ring-blue-500 text-sm bg-white dark:bg-gray-700 dark:text-white transition-colors">
+                        <option value="">(Unassigned)</option>
+                    </select>
+                </div>
+
+            </form>
+        </div>
+
+        <div
+            class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex justify-between transition-colors">
+            <button id="btnDelete" onclick="deleteTask()" type="button"
+                class="hidden px-4 py-2 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded text-sm font-medium transition-colors">Delete</button>
+            <div class="flex ml-auto">
+                <button onclick="closeDrawer()" type="button"
+                    class="px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded mr-2 text-sm font-medium transition-colors">Cancel</button>
+                <button onclick="submitTask()" type="button"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium transition-colors">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/layout.js"></script>
+    <script>
+        loadLayout('할 일 목록');
+
+        let allTasks = [];
+        let currentFilteredTasks = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        async function loadTasks() {
+            try {
+                const res = await fetch('/api/tasks');
+                const data = await res.json();
+                allTasks = data;
+                renderTasks(allTasks);
+            } catch (error) {
+                console.error("Error loading tasks:", error);
+            }
+        }
+
+        function renderTasks(tasks) {
+            // Reset to page 1 if new data comes in
+            if (tasks !== currentFilteredTasks) {
+                currentFilteredTasks = tasks;
+                currentPage = 1;
+            }
+
+            updateTable();
+        }
+
+        function updateTable() {
+            const tbody = document.getElementById('tasksTableBody');
+            tbody.innerHTML = '';
+
+            if (currentFilteredTasks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">No tasks found</td></tr>';
+                document.getElementById('pageInfo').innerText = '0 - 0 of 0';
+                document.getElementById('btnPrev').disabled = true;
+                document.getElementById('btnNext').disabled = true;
+                return;
+            }
+
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageTasks = currentFilteredTasks.slice(start, end);
+
+            pageTasks.forEach(task => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700 transition transition-colors';
+
+                let statusClass = 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+                if (task.status === 'RUNNING') statusClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                if (task.status === 'COMPLETED') statusClass = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+
+                // Pass only ID to openEditDrawer
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <button onclick="openEditDrawer('${task.task_id}')" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
+                            <i class="fa-regular fa-pen-to-square"></i>
+                        </button>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">${task.status}</span></td>
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white truncate max-w-md" title="${task.todo}">${task.todo}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${task.assignee_name || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${new Date(task.created_at).toLocaleDateString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Update Pagination
+            document.getElementById('pageInfo').innerText = `${start + 1} - ${Math.min(end, currentFilteredTasks.length)} of ${currentFilteredTasks.length}`;
+            document.getElementById('btnPrev').disabled = currentPage === 1;
+            document.getElementById('btnNext').disabled = end >= currentFilteredTasks.length;
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updateTable();
+            }
+        }
+
+        function nextPage() {
+            if ((currentPage * itemsPerPage) < currentFilteredTasks.length) {
+                currentPage++;
+                updateTable();
+            }
+        }
+
+        function filterTasks() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allTasks.filter(task => {
+                const status = (task.status || '').toLowerCase();
+                const todo = (task.todo || '').toLowerCase();
+                const assignee = (task.assignee_name || '').toLowerCase();
+                return status.includes(query) || todo.includes(query) || assignee.includes(query);
+            });
+            renderTasks(filtered);
+        }
+
+        loadTasks();
+
+        // Drawer
+        const drawer = document.getElementById('taskDrawer');
+        const overlay = document.getElementById('drawerOverlay');
+        const form = document.getElementById('createTaskForm');
+        let isEditMode = false;
+
+        async function loadAssignees() {
+            if (document.getElementById('assigneeSelect').options.length <= 1) {
+                const res = await fetch('/api/employees?all=true');
+                const emps = await res.json();
+                const select = document.getElementById('assigneeSelect');
+                emps.forEach(e => {
+                    const opt = document.createElement('option');
+                    opt.value = e.empno;
+                    opt.textContent = e.ename;
+                    select.appendChild(opt);
+                });
+            }
+        }
+
+        function openDrawer() {
+            document.getElementById('drawerTitle').textContent = 'New Task';
+            form.reset();
+            document.getElementById('taskIdInput').value = '';
+            isEditMode = false;
+            document.getElementById('btnDelete').classList.add('hidden');
+            loadAssignees();
+            drawer.classList.remove('translate-x-full');
+            overlay.classList.remove('hidden');
+        }
+
+        async function openEditDrawer(id) {
+            const task = allTasks.find(t => t.task_id == id);
+            if (!task) {
+                // console.error('Task not found:', id);
+                return;
+            }
+
+
+            document.getElementById('drawerTitle').textContent = 'Edit Task';
+            await loadAssignees();
+
+            document.getElementById('taskIdInput').value = task.task_id;
+            form.status.value = task.status;
+            form.todo.value = task.todo;
+            form.empno.value = task.empno || ''; // Handle null properly
+
+            isEditMode = true;
+            document.getElementById('btnDelete').classList.remove('hidden');
+            drawer.classList.remove('translate-x-full');
+            overlay.classList.remove('hidden');
+        }
+
+        function closeDrawer() {
+            drawer.classList.add('translate-x-full');
+            overlay.classList.add('hidden');
+        }
+
+        async function submitTask() {
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const id = data.id;
+
+            try {
+                let url = '/api/tasks';
+                let method = 'POST';
+
+                if (isEditMode && id) {
+                    url = `/api/tasks/${id}`;
+                    method = 'PUT';
+                }
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+
+                if (res.ok) {
+                    closeDrawer();
+                    loadTasks();
+                } else {
+                    alert('Error saving task');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Failed to save task');
+            }
+        }
+
+        async function deleteTask() {
+            const id = document.getElementById('taskIdInput').value;
+            if (!confirm('Delete this task?')) return;
+
+            try {
+                const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    closeDrawer();
+                    loadTasks();
+                } else {
+                    alert('Error deleting task');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Failed to delete task');
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>다면 검색 - Dams PLUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 h-screen flex overflow-hidden transition-colors duration-300">
+
+    <!-- SIDEBAR -->
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- HEADER -->
+
+        <!-- Content -->
+        <main
+            class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 transition-colors duration-300">
+
+            <div class="flex h-full gap-6">
+                <!-- Sidebar (Filters) -->
+                <aside
+                    class="w-64 flex-shrink-0 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 h-full overflow-y-auto transition-colors">
+                    <!-- Global Search -->
+                    <div class="mb-6">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                            <input type="text" id="globalSearch" placeholder="Search..."
+                                class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 transition-colors">
+                        </div>
+                    </div>
+
+                    <!-- Filter Groups Container -->
+                    <div id="filterContainer" class="space-y-6">
+                        <!-- Filters will be injected here via JS -->
+                    </div>
+                </aside>
+
+                <!-- Right Content (Table) -->
+                <div
+                    class="flex-1 flex flex-col min-w-0 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 h-full transition-colors">
+
+                    <!-- Table Header / Tools -->
+                    <div
+                        class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700 rounded-t-lg transition-colors">
+                        <div class="font-bold text-gray-700 dark:text-gray-200">
+                            전체 행 수 <span id="rowCount">0</span>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="resetFilters()"
+                                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 font-medium px-4 py-2 text-sm">
+                                <i class="fa-solid fa-rotate-left mr-1"></i> 초기화
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Table Container -->
+                    <div class="flex-1 overflow-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider cursor-pointer group"
+                                        onclick="sortData('ename')">
+                                        직원명 <i
+                                            class="fa-solid fa-sort ml-1 text-gray-400 group-hover:text-blue-500"></i>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider cursor-pointer group"
+                                        onclick="sortData('job')">
+                                        직무 <i class="fa-solid fa-sort ml-1 text-gray-400 group-hover:text-blue-500"></i>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider cursor-pointer group"
+                                        onclick="sortData('mgr')">
+                                        관리자 <i
+                                            class="fa-solid fa-sort ml-1 text-gray-400 group-hover:text-blue-500"></i>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider cursor-pointer group"
+                                        onclick="sortData('hiredate')">
+                                        입사일 <i
+                                            class="fa-solid fa-sort ml-1 text-gray-400 group-hover:text-blue-500"></i>
+                                    </th>
+                                    <th class="px-6 py-3 text-right text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider cursor-pointer group"
+                                        onclick="sortData('sal')">
+                                        급여 <i class="fa-solid fa-sort ml-1 text-gray-400 group-hover:text-blue-500"></i>
+                                    </th>
+                                    <th class="px-6 py-3 text-right text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider cursor-pointer group"
+                                        onclick="sortData('comm')">
+                                        보너스 <i
+                                            class="fa-solid fa-sort ml-1 text-gray-400 group-hover:text-blue-500"></i>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider cursor-pointer group"
+                                        onclick="sortData('dname')">
+                                        부서 <i class="fa-solid fa-sort ml-1 text-gray-400 group-hover:text-blue-500"></i>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+                                id="empTableBody">
+                                <!-- Rows loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination Footer -->
+                    <div id="pagination-container" class="border-t border-gray-200 dark:border-gray-700 p-4"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- No Drawer needed for pure Search View, but could be added if edit is desired. Keeping clean for now. -->
+
+    <script src="/js/layout.js"></script>
+    <script src="/js/pagination.js"></script>
+    <script>
+        loadLayout('다면 검색');
+
+        // Global Data
+        let allEmployees = [];
+        let filteredEmployees = [];
+        let currentSort = { key: 'ename', asc: true };
+        let activeFilters = {
+            search: '',
+            dname: new Set(),
+            m_name: new Set(),
+            job: new Set()
+        };
+
+        // Pagination State
+        let currentPage = 1;
+        const limit = 10;
+
+        // Initialize
+        async function loadEmployees() {
+            try {
+                // Fetch ALL employees for client-side filtering
+                const res = await fetch('/api/employees?all=true');
+                allEmployees = await res.json();
+
+                // Pre-process data
+                allEmployees = allEmployees.map(e => ({
+                    ...e,
+                    dname: e.dname || 'Unknown',
+                    m_name: e.m_name || 'None',
+                    job: e.job || 'None'
+                }));
+
+                applyFilters(); // Initial render
+            } catch (error) {
+                console.error("Error loading employees:", error);
+            }
+        }
+
+        // --- Filtering Logic ---
+
+        function applyFilters() {
+            filteredEmployees = allEmployees.filter(emp => {
+                // 1. Global Search
+                const searchMatch = !activeFilters.search ||
+                    Object.values(emp).some(val =>
+                        String(val).toLowerCase().includes(activeFilters.search.toLowerCase())
+                    );
+                if (!searchMatch) return false;
+
+                // 2. Facet Filters (OR within category, AND across categories)
+                if (activeFilters.dname.size > 0 && !activeFilters.dname.has(emp.dname)) return false;
+                if (activeFilters.m_name.size > 0 && !activeFilters.m_name.has(emp.m_name)) return false;
+                if (activeFilters.job.size > 0 && !activeFilters.job.has(emp.job)) return false;
+
+                return true;
+            });
+
+            // Sort
+            sortData(currentSort.key, false); // false = don't toggle, just apply
+        }
+
+        function sortData(key, toggle = true) {
+            if (toggle && currentSort.key === key) {
+                currentSort.asc = !currentSort.asc;
+            } else if (toggle) {
+                currentSort.key = key;
+                currentSort.asc = true;
+            }
+
+            filteredEmployees.sort((a, b) => {
+                let valA = a[key];
+                let valB = b[key];
+
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+
+                if (valA < valB) return currentSort.asc ? -1 : 1;
+                if (valA > valB) return currentSort.asc ? 1 : -1;
+                return 0;
+            });
+
+            currentPage = 1; // Reset to page 1 on sort/filter
+            renderTable();
+            renderFilters();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('empTableBody');
+            tbody.innerHTML = '';
+
+            const currency = new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 });
+
+            // Client-Side Pagination Logic
+            const total = filteredEmployees.length;
+            const start = (currentPage - 1) * limit;
+            const end = start + limit;
+            const pageData = filteredEmployees.slice(start, end);
+
+            pageData.forEach(emp => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700 transition border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors';
+
+                row.innerHTML = `
+                    <td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">${emp.ename}</td>
+                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${emp.job}</td>
+                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${emp.m_name}</td>
+                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${emp.hiredate_str}</td>
+                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">${currency.format(emp.sal)}</td>
+                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-right">${emp.comm ? currency.format(emp.comm) : ''}</td>
+                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${emp.dname}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('rowCount').textContent = total;
+
+            // Render Pagination
+            // We need to pass a callback that updates currentPage and re-renders table
+            renderPagination('pagination-container', total, limit, currentPage, (newPage) => {
+                currentPage = newPage;
+                renderTable(); // Re-render only table, no need to re-sort or re-filter
+            });
+        }
+
+        function renderFilters() {
+            const container = document.getElementById('filterContainer');
+
+            // Use allEmployees for static facet counts (showing total available in system)
+            // or filteredEmployees for dynamic counts (showing available in current view).
+            // User screenshot implies static groups (e.g. Sales (6)). 
+            // Let's use allEmployees for the base groups to match the visual of "Facet Search".
+
+            const facets = [
+                { key: 'dname', label: '부서' },
+                { key: 'm_name', label: '관리자' },
+                { key: 'job', label: '직무' }
+            ];
+
+            container.innerHTML = '';
+
+            facets.forEach(facet => {
+                // Group Data & Counts (from ALL data)
+                const counts = {};
+                allEmployees.forEach(emp => {
+                    const val = emp[facet.key];
+                    counts[val] = (counts[val] || 0) + 1;
+                });
+
+                // Section HTML
+                const section = document.createElement('div');
+                section.className = "border-b border-gray-100 dark:border-gray-700 pb-4 last:border-0 transition-colors";
+
+                const header = document.createElement('h3');
+                header.className = "font-bold text-gray-700 dark:text-gray-300 mb-2 flex justify-between items-center cursor-pointer";
+                header.innerHTML = `${facet.label} <i class="fa-solid fa-ellipsis-vertical text-gray-400 text-xs"></i>`;
+                section.appendChild(header);
+
+                const list = document.createElement('div');
+                list.className = "space-y-1";
+
+                Object.keys(counts).sort().forEach(val => {
+                    const count = counts[val];
+                    const isChecked = activeFilters[facet.key].has(val);
+
+                    const label = document.createElement('label');
+                    label.className = "flex items-center space-x-2 cursor-pointer text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors";
+
+                    label.innerHTML = `
+                        <input type="checkbox" value="${val}" ${isChecked ? 'checked' : ''} 
+                            onchange="toggleFilter('${facet.key}', '${val}')"
+                            class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 h-4 w-4 dark:bg-gray-700">
+                        <span class="flex-1">${val}</span>
+                        <span class="text-gray-400 dark:text-gray-500 text-xs">(${count})</span>
+                    `;
+                    list.appendChild(label);
+                });
+
+                section.appendChild(list);
+                container.appendChild(section);
+            });
+        }
+
+        // --- Event Handlers ---
+
+        document.getElementById('globalSearch').addEventListener('input', (e) => {
+            activeFilters.search = e.target.value.trim();
+            applyFilters();
+        });
+
+        function toggleFilter(category, value) {
+            const set = activeFilters[category];
+            if (set.has(value)) {
+                set.delete(value);
+            } else {
+                set.add(value);
+            }
+            applyFilters();
+        }
+
+        function resetFilters() {
+            activeFilters = {
+                search: '',
+                dname: new Set(),
+                m_name: new Set(),
+                job: new Set()
+            };
+            document.getElementById('globalSearch').value = '';
+            applyFilters();
+        }
+
+        loadEmployees();
+    </script>
+</body>
+
+</html>

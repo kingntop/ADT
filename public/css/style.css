@@ -1,0 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+    font-family: "NanumSquare", "Nanum Barun Gothic", "Pretendard", 
+                 "-apple-system", "BlinkMacSystemFont", 
+                 "Apple SD Gothic Neo", "Malgun Gothic", 
+                 "Dotum", "sans-serif";
+    -webkit-font-smoothing: antialiased;
+}
