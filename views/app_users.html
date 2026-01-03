@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 
-<body class="bg-gray-100 dark:bg-gray-900 h-screen flex overflow-hidden transition-colors duration-300">
+<body class="bg-gray-100 dark:bg-gray-900 h-screen flex overflow-hidden transition-colors duration-75">
 
     <!-- Sidebar Container -->
     <!-- SIDEBAR -->
@@ -22,7 +22,7 @@
 
         <!-- Content -->
         <main
-            class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 transition-colors duration-300">
+            class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 transition-colors duration-75">
 
             <!-- Toolbar -->
             <div
@@ -50,6 +50,9 @@
                         <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
                                 <th class="w-10 px-6 py-3"></th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    사진</th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                                     사용자명</th>
@@ -85,7 +88,7 @@
 
     <!-- Drawer -->
     <div id="userDrawer"
-        class="fixed inset-y-0 right-0 w-96 bg-white shadow-xl transform translate-x-full transition-transform duration-300 z-50 flex flex-col">
+        class="fixed inset-y-0 right-0 w-96 bg-white shadow-xl transform translate-x-full transition-transform duration-75 z-50 flex flex-col">
         <!-- Drawer Header -->
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
             <h2 class="text-lg font-bold text-gray-800" id="drawerTitle">신규 사용자 등록</h2>
@@ -98,6 +101,17 @@
         <div class="flex-1 overflow-y-auto p-6 space-y-6 pt-2">
             <form id="userForm">
                 <input type="hidden" name="user_id" id="userIdInput">
+
+                <!-- Photo -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">사진</label>
+                    <div class="flex items-center space-x-3">
+                        <img id="previewPhoto" src="" alt="Preview"
+                            class="w-12 h-12 rounded-full object-cover bg-gray-200 hidden">
+                        <input type="file" name="photo" id="photoInput" accept="image/*"
+                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    </div>
+                </div>
 
                 <!-- Email -->
                 <div class="space-y-1">
@@ -215,6 +229,9 @@
                             <i class="fa-regular fa-pen-to-square"></i>
                         </button>
                     </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <img src="${`/api/app_users/${user.user_id}/photo`}" onerror="this.src='https://ui-avatars.com/api/?name=${user.username}&background=random'" alt="User" class="w-8 h-8 rounded-full object-cover border border-gray-200">
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.username}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.email}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -248,6 +265,13 @@
             document.getElementById('passwordHint').classList.add('hidden');
             document.getElementById('emailInput').disabled = false;
 
+            // Reset Photo Preview
+            const preview = document.getElementById('previewPhoto');
+            if (preview) {
+                preview.src = '';
+                preview.classList.add('hidden');
+            }
+
             isEditMode = false;
             document.getElementById('btnDelete').classList.add('hidden');
 
@@ -270,6 +294,19 @@
             document.getElementById('passwordInput').required = false;
             document.getElementById('passwordHint').classList.remove('hidden');
 
+            // Set photo preview
+            const photoUrl = `/api/app_users/${user.user_id}/photo`;
+            const preview = document.getElementById('previewPhoto');
+            if (preview) {
+                preview.src = photoUrl;
+                preview.classList.remove('hidden');
+                // If photo fails to load, hide it
+                preview.onerror = () => {
+                    preview.classList.add('hidden');
+                    preview.src = '';
+                };
+            }
+
             isEditMode = true;
             document.getElementById('btnDelete').classList.remove('hidden');
 
@@ -289,10 +326,11 @@
             }
 
             const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
-            data.is_locked = document.getElementById('isLockedInput').checked;
+            // Checkbox handling for FormData
+            const isLocked = document.getElementById('isLockedInput').checked;
+            formData.set('is_locked', isLocked);
 
-            const id = data.user_id;
+            const id = formData.get('user_id');
 
             try {
                 let url = '/api/app_users';
@@ -301,15 +339,15 @@
                 if (isEditMode && id) {
                     url = `/api/app_users/${id}`;
                     method = 'PUT';
-                    if (!data.password) {
-                        delete data.password;
-                    }
+                    // Password handling: if empty, removing it from logic handled by backend usually, 
+                    // but with FormData we send it empty. Backend should check if password is provided.
+                    // My backend logic checks `if (password)`. So empty string is fine (falsy).
                 }
 
+                // Note: No Content-Type header for FormData, browser sets multipart/form-data with boundary
                 const res = await fetch(url, {
                     method: method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    body: formData
                 });
 
                 const result = await res.json();
@@ -318,7 +356,7 @@
                     alert('Error: ' + (result.message || '작업 실패'));
                 } else {
                     closeDrawer();
-                    loadUsers();
+                    loadUsers(currentPage); // Reload current page
                 }
             } catch (err) {
                 console.error(err);

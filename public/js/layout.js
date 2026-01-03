@@ -32,7 +32,7 @@ window.toggleSidebar = function () {
             setTimeout(() => {
                 text.classList.remove('opacity-0');
                 text.classList.add('opacity-100');
-            }, 50);
+            }, 10);
         });
 
         localStorage.setItem('sidebarCollapsed', 'false');
@@ -93,7 +93,7 @@ async function loadLayout(pageTitle) {
             setTimeout(() => {
                 const titleEl = document.getElementById('page-title');
                 if (titleEl) titleEl.textContent = pageTitle;
-            }, 50);
+            }, 10);
         }
 
         // Highlight Active Menu
@@ -123,10 +123,62 @@ async function loadLayout(pageTitle) {
             document.head.appendChild(style);
         }
 
+        // --- Recent Tabs Logic ---
+        if (pageTitle && window.location.pathname !== '/login.html') {
+            updateRecentTabs(pageTitle, window.location.pathname);
+        }
+        renderRecentTabs();
+
     } catch (error) {
         console.error("Error loading layout:", error);
     }
 }
+
+function updateRecentTabs(title, url) {
+    let recent = JSON.parse(localStorage.getItem('recentTabs') || '[]');
+
+    // Remove if exists (to move to top)
+    recent = recent.filter(tab => tab.url !== url);
+
+    // Add to top
+    recent.unshift({ title, url });
+
+    // Limit to 5
+    if (recent.length > 5) {
+        recent = recent.slice(0, 5);
+    }
+
+    localStorage.setItem('recentTabs', JSON.stringify(recent));
+}
+
+function renderRecentTabs() {
+    const container = document.getElementById('recent-tabs');
+    if (!container) return;
+
+    const recent = JSON.parse(localStorage.getItem('recentTabs') || '[]');
+    const currentPath = window.location.pathname;
+
+    container.innerHTML = recent.map(tab => {
+        const isActive = tab.url === currentPath;
+        const classes = isActive
+            ? 'bg-blue-600 text-white shadow-md'
+            : 'bg-white text-gray-600 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600';
+
+        return `
+            <a href="${tab.url}" class="flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${classes}">
+                ${tab.title}
+                ${isActive ? '' : `<span onclick="event.preventDefault(); removeRecentTab('${tab.url}')" class="ml-2 hover:text-red-500"><i class="fa-solid fa-xmark"></i></span>`}
+            </a>
+        `;
+    }).join('');
+}
+
+window.removeRecentTab = function (url) {
+    let recent = JSON.parse(localStorage.getItem('recentTabs') || '[]');
+    recent = recent.filter(tab => tab.url !== url);
+    localStorage.setItem('recentTabs', JSON.stringify(recent));
+    renderRecentTabs();
+};
 
 // Global Fetch Interceptor to handle 401s
 const originalFetch = window.fetch;
@@ -147,6 +199,7 @@ window.logout = async function () {
         console.error(e);
     }
     localStorage.removeItem('user');
+    localStorage.removeItem('recentTabs'); // Clear Recent Tabs
     window.location.href = '/login.html';
 };
 
@@ -179,7 +232,7 @@ window.showToast = function (message, type = 'info') {
 
     // Create Toast Element
     const toast = document.createElement('div');
-    toast.className = `flex items-center w-full max-w-sm p-4 rounded-lg shadow border ${style.bg} ${style.border} ${style.text} transform transition-all duration-300 translate-x-full opacity-0`;
+    toast.className = `flex items-center w-full max-w-sm p-4 rounded-lg shadow border ${style.bg} ${style.border} ${style.text} transform transition-all duration-75 translate-x-full opacity-0`;
 
     toast.innerHTML = `
         <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full ${style.bg} bg-opacity-50">

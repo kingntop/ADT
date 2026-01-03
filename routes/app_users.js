@@ -1,6 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
+const multer = require('multer');
+
+// Configure Multer for Memory Storage
+const storage = multer.memoryStorage();
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB Limit
+});
 
 module.exports = (pool) => {
     // Helper: Hash Password
@@ -9,7 +17,7 @@ module.exports = (pool) => {
         return crypto.createHash('sha256').update(password + salt).digest('hex');
     };
 
-    // Get All Users
+    // Get All Users (Exclude Photo)
     router.get('/', async (req, res) => {
         try {
             const page = parseInt(req.query.page) || 1;
@@ -40,8 +48,27 @@ module.exports = (pool) => {
         }
     });
 
-    // Create User
-    router.post('/', async (req, res) => {
+    // Get User Photo
+    router.get('/:id/photo', async (req, res) => {
+        try {
+            const { id } = req.params;
+            const result = await pool.query('SELECT photo FROM app_users WHERE user_id = $1', [id]);
+
+            if (result.rows.length === 0 || !result.rows[0].photo) {
+                return res.status(404).send('No photo');
+            }
+
+            const img = result.rows[0].photo;
+            res.set('Content-Type', 'image/jpeg'); // Defaulting to jpeg, browser usually auto-detects or we could store mime type
+            res.send(img);
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Error fetching photo');
+        }
+    });
+
+    // Create User with Photo
+    router.post('/', upload.single('photo'), async (req, res) => {
         let { email, username, password, role_id, is_locked } = req.body;
 
         if (!email || !username || !password) {
@@ -58,13 +85,14 @@ module.exports = (pool) => {
             }
 
             const password_hash = hashPassword(password);
+            const photo = req.file ? req.file.buffer : null;
 
             const query = `
-                INSERT INTO app_users (email, username, password_hash, role_id, is_locked)
-                VALUES ($1, $2, $3, $4, $5)
+                INSERT INTO app_users (email, username, password_hash, role_id, is_locked, photo)
+                VALUES ($1, $2, $3, $4, $5, $6)
                 RETURNING user_id, email, username, role_id, is_locked, created_at
             `;
-            const values = [email, username, password_hash, role_id || null, is_locked || false];
+            const values = [email, username, password_hash, role_id || null, is_locked || false, photo];
 
             const result = await pool.query(query, values);
             res.json({ success: true, user: result.rows[0] });
@@ -75,10 +103,10 @@ module.exports = (pool) => {
         }
     });
 
-    // Update User
-    router.put('/:id', async (req, res) => {
+    // Update User with Photo
+    router.put('/:id', upload.single('photo'), async (req, res) => {
         const { id } = req.params;
-        let { email, role_id, is_locked, password } = req.body; // Allow email update
+        let { email, role_id, is_locked, password } = req.body;
 
         if (email) email = email.toLowerCase();
 
@@ -103,13 +131,17 @@ module.exports = (pool) => {
                 updates.push(`password_hash = $${idx++}`);
                 values.push(hashPassword(password));
             }
+            if (req.file) {
+                updates.push(`photo = $${idx++}`);
+                values.push(req.file.buffer);
+            }
 
             if (updates.length === 0) {
                 return res.json({ success: true, message: 'No changes' });
             }
 
             values.push(id);
-            const query = `UPDATE app_users SET ${updates.join(', ')} WHERE user_id = $${idx} RETURNING *`;
+            const query = `UPDATE app_users SET ${updates.join(', ')} WHERE user_id = $${idx} RETURNING user_id, email, username, role_id, is_locked, last_login_at`; // Exclude photo from return for perf
 
             const result = await pool.query(query, values);
 
@@ -117,7 +149,6 @@ module.exports = (pool) => {
                 return res.status(404).json({ success: false, message: 'User not found' });
             }
 
-            delete result.rows[0].password_hash;
             res.json({ success: true, user: result.rows[0] });
 
         } catch (err) {
@@ -130,7 +161,7 @@ module.exports = (pool) => {
     router.delete('/:id', async (req, res) => {
         const { id } = req.params;
         try {
-            const query = 'DELETE FROM app_users WHERE user_id = $1 RETURNING *';
+            const query = 'DELETE FROM app_users WHERE user_id = $1 RETURNING user_id'; // Reduced return
             const result = await pool.query(query, [id]);
 
             if (result.rows.length === 0) {

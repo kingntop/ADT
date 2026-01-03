@@ -1,6 +1,9 @@
 <header
-    class="h-16 bg-white dark:bg-gray-800 dark:border-gray-700 shadow-sm flex items-center justify-between px-6 z-10 w-full transition-colors duration-300">
+    class="h-16 bg-white dark:bg-gray-800 dark:border-gray-700 shadow-sm flex items-center justify-between px-6 z-10 w-full transition-colors duration-75">
     <h1 class="text-2xl font-bold text-gray-800 dark:text-white" id="page-title"></h1>
+    <div id="recent-tabs" class="flex-1 flex items-center px-6 space-x-2 overflow-x-auto no-scrollbar hidden md:flex">
+        <!-- Recent Tabs injected here -->
+    </div>
     <div class="flex items-center space-x-4">
         <!-- Theme Toggle -->
         <button id="themeToggle" onclick="toggleTheme()"
@@ -37,5 +40,27 @@
     // Or we could fetch /auth/me if we implemented it.
     if (user) {
         document.getElementById('userNameDisplay').textContent = user.ename;
+
+        // Try to load photo
+        const photoUrl = `/api/app_users/${user.user_id}/photo`;
+        const profileIcon = document.querySelector('.fa-circle-user');
+
+        // Create an image element to test loading
+        const img = new Image();
+        img.src = photoUrl;
+        img.onload = function () {
+            // If photo exists, replace icon with image
+            const userImg = document.createElement('img');
+            userImg.src = photoUrl;
+            userImg.className = "w-8 h-8 rounded-full object-cover border border-gray-200 ml-1";
+            userImg.alt = "User Photo";
+
+            if (profileIcon) {
+                profileIcon.replaceWith(userImg);
+            }
+        };
+        img.onerror = function () {
+            // Keep default icon if no photo
+        };
     }
 </script>

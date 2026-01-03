@@ -38,7 +38,7 @@
     </style>
 </head>
 
-<body class="bg-gray-100 dark:bg-gray-900 h-screen flex overflow-hidden transition-colors duration-300">
+<body class="bg-gray-100 dark:bg-gray-900 h-screen flex overflow-hidden transition-colors duration-75">
 
     <!-- SIDEBAR -->
 
@@ -48,7 +48,7 @@
 
         <!-- Content -->
         <main
-            class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 transition-colors duration-300">
+            class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 transition-colors duration-75">
 
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">Popular Movies</h1>
 
@@ -92,7 +92,7 @@
                 card.innerHTML = `
                     <!-- Background with Overlay -->
                     <div class="absolute inset-0 z-0">
-                        <img src="${bgImage}" alt="${movie.title}" class="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-300">
+                        <img src="${bgImage}" alt="${movie.title}" class="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-75">
                         <div class="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent"></div>
                     </div>
 
