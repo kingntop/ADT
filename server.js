@@ -31,9 +31,19 @@ process.on('unhandledRejection', (reason, promise) => {
 // app.use(logger.accessMiddleware);
 
 // Security Middleware
+
 app.use(helmet({
+    // 🔴 1. HSTS 비활성화 (HTTP 전용 환경에서 필수)
+    // 이걸 끄지 않으면 브라우저가 강제로 HTTPS로 리다이렉트 시도할 수 있습니다.
+    hsts: false,
+
     contentSecurityPolicy: {
+        // 🔵 2. upgrade-insecure-requests 방지
+        // 현재 작성하신 directives에는 포함되어 있지 않아 다행이지만, 
+        // 확실히 하기 위해 명시적으로 null 처리하거나 포함하지 않아야 합니다.
         directives: {
+            "upgrade-insecure-requests": null, // 혹시 모를 자동 변환 방지
+
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
             scriptSrcAttr: ["'unsafe-inline'"],
