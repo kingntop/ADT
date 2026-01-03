@@ -11,14 +11,16 @@ jobs:
       - name: Deploy using SSH
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
+          host: '140.238.8.114'
+          username: 'stmlymc'
+          password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
           script: |
-            # 서버에서 실행할 명령어들
-            cd /home/ubuntu/my-project  # 프로젝트 폴더로 이동
-            git pull origin main        # 최신 코드 받기
-            npm install                 # 의존성 설치 (필요시)
-            npm run build               # 빌드 (필요시)
-            pm2 reload all              # 서버 재시작 (예: PM2 사용시)
+            # Navigate to the project directory
+            cd ADT
+            # Pull latest changes
+            git pull origin main
+            # Install dependencies
+            npm install
+            # Restart application
+            pm2 reload all
