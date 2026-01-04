@@ -320,6 +320,7 @@ app.get('/movies', isAuthenticated, (req, res) => renderPage('movie.html', res))
 app.get('/images', isAuthenticated, (req, res) => renderPage('images.html', res)); // Images View
 app.get('/apikeys', isAuthenticated, (req, res) => renderPage('apikeys.html', res)); // API Keys View
 app.get('/resource', isAuthenticated, (req, res) => renderPage('resource.html', res)); // Resource View
+app.get('/resource.html', (req, res) => res.redirect('/resource')); // Legacy Redirect
 
 // Login Page (No SSR needed for header/sidebar usually, but let's serve it from views)
 app.get('/login.html', (req, res) => {
