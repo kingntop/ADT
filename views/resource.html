@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시스템 리소스 - Dams PLUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 h-screen flex overflow-hidden transition-colors duration-75">
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- Main Scrollable -->
+        <main
+            class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6 transition-colors duration-75">
+
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-white">서버 리소스 모니터링</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">실시간 시스템 상태 (140.238.8.114)</p>
+            </div>
+
+            <!-- Top Row: Gauges -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+
+                <!-- CPU Usage -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 text-center">CPU 사용량</h3>
+                    <div id="gaugeCPU" class="w-full h-64"></div>
+                    <p id="textCPU" class="text-center text-xl font-bold text-gray-800 dark:text-white mt-2">- %</p>
+                </div>
+
+                <!-- Memory Usage -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 text-center">메모리 사용량</h3>
+                    <div id="gaugeMem" class="w-full h-64"></div>
+                    <p id="textMem" class="text-center text-xl font-bold text-gray-800 dark:text-white mt-2">- / - GB
+                    </p>
+                </div>
+
+                <!-- Disk Usage -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 text-center">디스크 사용량</h3>
+                    <div id="gaugeDisk" class="w-full h-64"></div>
+                    <p id="textDisk" class="text-center text-xl font-bold text-gray-800 dark:text-white mt-2">- / - GB
+                    </p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/js/layout.js"></script>
+    <script>
+        // Init Layout
+        loadLayout('리소스 모니터링');
+
+        // Chart Instances
+        let cpuChart, memChart, diskChart;
+
+        function initCharts() {
+            cpuChart = echarts.init(document.getElementById('gaugeCPU'));
+            memChart = echarts.init(document.getElementById('gaugeMem'));
+            diskChart = echarts.init(document.getElementById('gaugeDisk'));
+
+            const commonGaugeOption = {
+                series: [{
+                    type: 'gauge',
+                    startAngle: 180,
+                    endAngle: 0,
+                    min: 0,
+                    max: 100,
+                    splitNumber: 5,
+                    itemStyle: { color: '#58D9F9' },
+                    progress: { show: true, width: 30 },
+                    pointer: { show: false },
+                    axisLine: { lineStyle: { width: 30 } },
+                    axisTick: { show: false },
+                    splitLine: { length: 10, lineStyle: { width: 2, color: '#999' } },
+                    axisLabel: { distance: 10, color: '#999', fontSize: 14 },
+                    detail: { valueAnimation: true, formatter: '{value}%', offsetCenter: [0, '20%'], fontSize: 30, color: 'inherit' },
+                    data: [{ value: 0 }]
+                }]
+            };
+
+            cpuChart.setOption(JSON.parse(JSON.stringify(commonGaugeOption))); // Deep copy
+            memChart.setOption(JSON.parse(JSON.stringify(commonGaugeOption)));
+
+            // Customize colors
+            cpuChart.setOption({ series: [{ itemStyle: { color: '#F45050' } }] }); // Red for CPU
+            memChart.setOption({ series: [{ itemStyle: { color: '#F9D949' } }] }); // Yellow for Mem
+            diskChart.setOption({ series: [{ itemStyle: { color: '#3C6255' } }] }); // Green for Disk
+            diskChart.setOption(JSON.parse(JSON.stringify(commonGaugeOption)));
+
+            window.addEventListener('resize', () => {
+                cpuChart.resize();
+                memChart.resize();
+                diskChart.resize();
+            });
+        }
+
+        async function updateStats() {
+            try {
+                const res = await fetch('/api/stats/resources');
+                const data = await res.json();
+
+                // 1. CPU
+                const cpuVal = parseFloat(data.cpu.toFixed(1));
+                cpuChart.setOption({ series: [{ data: [{ value: cpuVal }] }] });
+                document.getElementById('textCPU').textContent = `${cpuVal}%`;
+
+                // 2. Memory
+                const memPercent = parseFloat(data.memory.percent.toFixed(1));
+                const memUsedGB = (data.memory.active / 1024 / 1024 / 1024).toFixed(1);
+                const memTotalGB = (data.memory.total / 1024 / 1024 / 1024).toFixed(1);
+                memChart.setOption({ series: [{ data: [{ value: memPercent }] }] });
+                document.getElementById('textMem').textContent = `${memUsedGB}GB / ${memTotalGB}GB`;
+
+                // 3. Disk
+                const diskPercent = parseFloat(data.disk.use.toFixed(1));
+                const diskUsedGB = (data.disk.used / 1024 / 1024 / 1024).toFixed(0);
+                const diskTotalGB = (data.disk.size / 1024 / 1024 / 1024).toFixed(0);
+                diskChart.setOption({ series: [{ data: [{ value: diskPercent, itemStyle: { color: '#3C6255' } }] }] });
+                document.getElementById('textDisk').textContent = `${diskUsedGB}GB / ${diskTotalGB}GB`;
+
+            } catch (err) {
+                console.error("Failed to fetch stats", err);
+            }
+        }
+
+        // Initialize
+        initCharts();
+        updateStats(); // First fetch
+        setInterval(updateStats, 3000); // Poll every 3 seconds
+
+    </script>
+</body>
+
+</html>

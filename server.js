@@ -7,6 +7,7 @@ const path = require('path');
 
 const helmet = require('helmet');
 const session = require('express-session');
+const si = require('systeminformation');
 
 const fs = require('fs');
 const logger = require('./utils/logger'); // Import Logger
@@ -176,6 +177,40 @@ pool.on('error', (err, client) => {
 const authRoutes = require('./routes/auth')(pool);
 const statsRoutes = require('./routes/stats')(pool);
 const employeeRoutes = require('./routes/employees')(pool);
+
+// System Resource API
+app.get('/api/stats/resources', async (req, res) => {
+    try {
+        const [cpu, mem, fsSize] = await Promise.all([
+            si.currentLoad(),
+            si.mem(),
+            si.fsSize()
+        ]);
+
+        // Find main partition (usually where OS is installed)
+        // For Windows it might be 'C:', for Linux '/'
+        // We'll take the first one or look for mount '/'
+        const mainFs = fsSize.find(d => d.mount === '/' || d.mount === 'C:') || fsSize[0] || {};
+
+        res.json({
+            cpu: cpu.currentLoad,
+            memory: {
+                total: mem.total,
+                active: mem.active,
+                used: mem.used,
+                percent: (mem.active / mem.total) * 100
+            },
+            disk: {
+                size: mainFs.size,
+                used: mainFs.used,
+                use: mainFs.use
+            }
+        });
+    } catch (error) {
+        logger.error(error, '[Resources] Failed to fetch metrics');
+        res.status(500).json({ error: 'Failed to fetch metrics' });
+    }
+});
 const departmentRoutes = require('./routes/departments')(pool);
 const treeRoutes = require('./routes/tree')(pool);
 const taskRoutes = require('./routes/tasks')(pool);
@@ -252,6 +287,7 @@ app.get('/calendars', isAuthenticated, (req, res) => renderPage('calendars.html'
 app.get('/movies', isAuthenticated, (req, res) => renderPage('movie.html', res)); // Movies View
 app.get('/images', isAuthenticated, (req, res) => renderPage('images.html', res)); // Images View
 app.get('/apikeys', isAuthenticated, (req, res) => renderPage('apikeys.html', res)); // API Keys View
+app.get('/resource.html', isAuthenticated, (req, res) => renderPage('resource.html', res)); // Resource View
 
 // Login Page (No SSR needed for header/sidebar usually, but let's serve it from views)
 app.get('/login.html', (req, res) => {
