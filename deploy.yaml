@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy using SSH
-        uses: appleboy/ssh-action@master
+        uses: stmlymc@140.238.8.114
         with:
           host: '140.238.8.114'
           username: 'stmlymc'
