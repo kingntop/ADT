@@ -14,7 +14,7 @@ const logger = require('./utils/logger'); // Import Logger
 
 // Resource History Buffer (In-Memory)
 const historyBuffer = [];
-const MAX_HISTORY_POINTS = 200; // 10 mins at 3s interval
+const MAX_HISTORY_POINTS = 600; // 10 mins at 1s interval
 
 // Background Resource Poller
 setInterval(async () => {
@@ -38,7 +38,7 @@ setInterval(async () => {
     } catch (err) {
         console.error('Resource Poller Error:', err);
     }
-}, 3000); // 3 seconds
+}, 1000); // 1 second
 
 const app = express();
 const port = 3000;
@@ -74,7 +74,7 @@ app.use(helmet({
             "upgrade-insecure-requests": null, // 혹시 모를 자동 변환 방지
 
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://cdn.plot.ly"],
             scriptSrcAttr: ["'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net"],
