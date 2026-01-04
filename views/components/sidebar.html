@@ -16,7 +16,7 @@
             <span class="sidebar-text ml-3 opacity-100 transition-opacity duration-75">대시보드</span>
         </a>
 
-        <a href="/resource.html"
+        <a href="/resource"
             class="flex items-center px-4 py-2 text-gray-400 hover:bg-gray-700 hover:text-white rounded transition whitespace-nowrap group">
             <i class="fa-solid fa-server w-6 text-center shrink-0"></i>
             <span class="sidebar-text ml-3 opacity-100 transition-opacity duration-75">서버 자원 현황</span>
@@ -136,7 +136,7 @@
                     if (res.ok) {
                         const allowedMenus = await res.json();
                         const allowedUrls = allowedMenus.map(m => m.url).filter(u => u);
-                        allowedUrls.push('/dashboard', '/login.html', '/password_change', '/resource.html');
+                        allowedUrls.push('/dashboard', '/login.html', '/password_change', '/resource');
 
                         const links = document.querySelectorAll('nav a');
                         links.forEach(link => {

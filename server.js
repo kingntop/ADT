@@ -319,7 +319,7 @@ app.get('/calendars', isAuthenticated, (req, res) => renderPage('calendars.html'
 app.get('/movies', isAuthenticated, (req, res) => renderPage('movie.html', res)); // Movies View
 app.get('/images', isAuthenticated, (req, res) => renderPage('images.html', res)); // Images View
 app.get('/apikeys', isAuthenticated, (req, res) => renderPage('apikeys.html', res)); // API Keys View
-app.get('/resource.html', isAuthenticated, (req, res) => renderPage('resource.html', res)); // Resource View
+app.get('/resource', isAuthenticated, (req, res) => renderPage('resource.html', res)); // Resource View
 
 // Login Page (No SSR needed for header/sidebar usually, but let's serve it from views)
 app.get('/login.html', (req, res) => {
