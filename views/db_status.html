@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DB 현황 - Dams PLUS</title>
+    <!-- Tailwind CSS (via CDN for simplicity, or cached) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- HEADER -->
+    <!-- Custom Styles -->
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .code-block {
+            font-family: 'Consolas', 'Monaco', monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white font-sans antialiased h-screen flex overflow-hidden">
+
+    <!-- SIDEBAR -->
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-900 relative">
+        <!-- Header Placeholder (To be replaced by SSR) -->
+        <header class="bg-gray-800 shadow-md h-16 flex items-center justify-between px-6 z-10 border-b border-gray-700">
+            <div class="flex items-center">
+                <h2 class="text-xl font-semibold text-white">DB 현황</h2>
+            </div>
+            <!-- User Profile would go here -->
+        </header>
+
+        <main class="flex-1 overflow-x-hidden overflow-y-auto p-6 scrollbar-hide">
+            <div class="max-w-7xl mx-auto space-y-6">
+
+                <!-- Title & Intro -->
+                <div class="flex justify-between items-end">
+                    <div>
+                        <h1
+                            class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
+                            Database Status
+                        </h1>
+                        <p class="text-gray-400 mt-1">실시간 데이터베이스 상태 및 모니터링</p>
+                    </div>
+                    <div>
+                        <button onclick="fetchQueries()"
+                            class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-sm font-medium transition shadow-lg shadow-blue-500/30">
+                            <i class="fa-solid fa-sync p-1"></i> 새로고침
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabs Container -->
+                <div class="border-b border-gray-700">
+                    <nav class="-mb-px flex space-x-8 overflow-x-auto" id="categoryTabs">
+                        <!-- Dynamic Tabs -->
+                        <!-- Example:
+                        <button class="border-blue-500 text-blue-500 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                            트랜젝션 정보
+                        </button>
+                        -->
+                    </nav>
+                </div>
+
+                <!-- Content Area -->
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <!-- Sidebar: Query List -->
+                    <div class="lg:col-span-1 space-y-4">
+                        <div class="bg-gray-800 rounded-xl border border-gray-700 shadow-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-200 mb-4 border-b border-gray-700 pb-2">Queries
+                            </h3>
+                            <div id="queryList" class="space-y-2 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                                <p class="text-gray-500 text-sm">카테고리를 선택해주세요.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main: Result Area -->
+                    <div class="lg:col-span-3 space-y-6">
+                        <! -- Selected Query Info -->
+                            <div id="queryInfo"
+                                class="hidden bg-gray-800 rounded-xl border border-gray-700 p-6 shadow-lg">
+                                <div class="flex justify-between items-start mb-4">
+                                    <h2 id="selectedQueryTitle" class="text-xl font-bold text-white"></h2>
+                                    <button onclick="executeQuery()"
+                                        class="px-3 py-1 bg-green-600 hover:bg-green-500 rounded text-sm transition">
+                                        <i class="fa-solid fa-play"></i> 실행
+                                    </button>
+                                </div>
+                                <div class="p-3 bg-gray-900 rounded-lg border border-gray-700">
+                                    <code id="selectedQuerySql" class="text-xs text-gray-400 code-block"></code>
+                                </div>
+                            </div>
+
+                            <!-- Result Table -->
+                            <div id="queryResultContainer"
+                                class="hidden bg-gray-800 rounded-xl border border-gray-700 shadow-lg overflow-hidden">
+                                <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-800">
+                                    <h3 class="font-medium text-gray-300">실행 결과 <span id="resultCount"
+                                            class="text-sm text-gray-500 ml-2"></span></h3>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-700">
+                                        <thead class="bg-gray-750 bg-gray-900/50" id="resultHead">
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-700 bg-gray-800" id="resultBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="emptyResult" class="hidden p-8 text-center text-gray-500">
+                                    데이터가 없습니다.
+                                </div>
+                            </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        let categoriesData = [];
+        let currentCategoryIdx = 0;
+        let currentQueryIdx = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchQueries();
+        });
+
+        async function fetchQueries() {
+            try {
+                const res = await fetch('/api/db-status/queries');
+                if (!res.ok) throw new Error('Failed to fetch queries');
+                categoriesData = await res.json();
+                renderTabs();
+                if (categoriesData.length > 0) {
+                    selectCategory(0);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('쿼리 목록을 불러오는데 실패했습니다.');
+            }
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('categoryTabs');
+            container.innerHTML = '';
+
+            categoriesData.forEach((cat, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${idx === currentCategoryIdx
+                        ? 'border-blue-500 text-blue-400'
+                        : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
+                    }`;
+                btn.textContent = cat.name;
+                btn.onclick = () => selectCategory(idx);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectCategory(idx) {
+            currentCategoryIdx = idx;
+            renderTabs();
+            renderQueryList();
+
+            // Auto Select first query if available (optional)
+            // if (categoriesData[idx].queries.length > 0) selectQuery(0);
+
+            // Or just clear current selection
+            currentQueryIdx = null;
+            document.getElementById('queryInfo').classList.add('hidden');
+            document.getElementById('queryResultContainer').classList.add('hidden');
+        }
+
+        function renderQueryList() {
+            const list = document.getElementById('queryList');
+            list.innerHTML = '';
+
+            const cat = categoriesData[currentCategoryIdx];
+            if (!cat || !cat.queries) return;
+
+            cat.queries.forEach((q, idx) => {
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-lg cursor-pointer transition flex items-center justify-between group ${idx === currentQueryIdx ? 'bg-blue-600/20 border border-blue-500/50' : 'bg-gray-700/50 hover:bg-gray-700 hover:border-gray-500 border border-transparent'
+                    }`;
+                div.onclick = () => selectQuery(idx);
+
+                div.innerHTML = `
+                    <span class="text-sm font-medium ${idx === currentQueryIdx ? 'text-blue-300' : 'text-gray-300'}">${q.title}</span>
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function selectQuery(idx) {
+            currentQueryIdx = idx;
+            renderQueryList();
+
+            const query = categoriesData[currentCategoryIdx].queries[idx];
+            document.getElementById('selectedQueryTitle').textContent = query.title;
+            document.getElementById('selectedQuerySql').textContent = query.sql;
+
+            document.getElementById('queryInfo').classList.remove('hidden');
+            document.getElementById('queryResultContainer').classList.add('hidden'); // Hide previous results
+
+            // Auto execute? Maybe better to wait for user click to avoid heavy queries on selection
+        }
+
+        async function executeQuery() {
+            if (currentQueryIdx === null) return;
+
+            const btn = document.querySelector('#queryInfo button');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 실행 중...';
+
+            try {
+                const category = categoriesData[currentCategoryIdx];
+                const query = category.queries[currentQueryIdx];
+
+                const res = await fetch('/api/db-status/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        categoryId: currentCategoryIdx,
+                        queryId: currentQueryIdx
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                renderResult(data);
+
+            } catch (err) {
+                console.error(err);
+                alert('Execution failed');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function renderResult(data) {
+            const container = document.getElementById('queryResultContainer');
+            const thead = document.getElementById('resultHead');
+            const tbody = document.getElementById('resultBody');
+            const count = document.getElementById('resultCount');
+            const empty = document.getElementById('emptyResult');
+
+            container.classList.remove('hidden');
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            count.textContent = `(${data.rowCount} rows)`;
+
+            if (!data.rows || data.rows.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            } else {
+                empty.classList.add('hidden');
+            }
+
+            // Headers
+            const headerRow = document.createElement('tr');
+            data.fields.forEach(field => {
+                const th = document.createElement('th');
+                th.className = 'px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider whitespace-nowrap';
+                th.textContent = field;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+
+            // Rows
+            data.rows.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-700/50 transition';
+                data.fields.forEach(field => {
+                    const td = document.createElement('td');
+                    td.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-300';
+                    const val = row[field];
+                    td.textContent = (val === null || val === undefined) ? '-' : val;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+
+</html>

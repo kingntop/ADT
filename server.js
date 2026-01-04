@@ -278,9 +278,13 @@ app.get('/api_endpoints', isAuthenticated, (req, res) => renderPage('api_endpoin
 app.use('/api/menus', isAuthenticated, require('./routes/menus')(pool));
 app.use('/api/roles', isAuthenticated, require('./routes/roles')(pool));
 app.use('/api/permissions', isAuthenticated, require('./routes/permissions')(pool));
+app.use('/api/db-status', isAuthenticated, require('./routes/db_status')(pool));
 
 // System Management Views
 const checkPagePermission = require('./middleware/checkPagePermission')(pool);
+
+// DB Status View
+app.get('/db_status', isAuthenticated, (req, res) => renderPage('db_status.html', res));
 
 // Apply explicit permission check for these sensitive pages
 app.get('/system/menus', isAuthenticated, checkPagePermission, (req, res) => renderPage('menus.html', res));
