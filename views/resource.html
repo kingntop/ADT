@@ -7,6 +7,7 @@
     <title>시스템 리소스 - Dams PLUS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -49,6 +50,13 @@
                     <p id="textDisk" class="text-center text-xl font-bold text-gray-800 dark:text-white mt-2">- / - GB
                     </p>
                 </div>
+            </div>
+
+            <!-- Bottom Row: History Chart -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 text-center">리소스 사용 이력 (최근 10분)
+                </h3>
+                <div id="historyChart" class="w-full h-80"></div>
             </div>
 
         </main>
@@ -103,10 +111,73 @@
             });
         }
 
+        // Plotly Chart
+        function initHistoryChart() {
+            const layout = {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                margin: { t: 10, r: 10, b: 40, l: 40 },
+                xaxis: {
+                    type: 'date',
+                    color: '#888',
+                    gridcolor: '#444'
+                },
+                yaxis: {
+                    range: [0, 100],
+                    color: '#888',
+                    gridcolor: '#444',
+                    title: 'Usage (%)'
+                },
+                showlegend: true,
+                legend: { x: 0, y: 1, font: { color: '#ccc' } }
+            };
+
+            const config = { responsive: true, displayModeBar: false };
+
+            const cpuTrace = {
+                x: [],
+                y: [],
+                name: 'CPU',
+                type: 'scatter',
+                mode: 'lines',
+                line: { color: '#F45050', width: 2 }
+            };
+
+            const memTrace = {
+                x: [],
+                y: [],
+                name: 'Memory',
+                type: 'scatter',
+                mode: 'lines',
+                line: { color: '#F9D949', width: 2 }
+            };
+
+            Plotly.newPlot('historyChart', [cpuTrace, memTrace], layout, config);
+
+            // Fetch initial history
+            fetch('/api/stats/resources/history')
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        const timestamps = data.map(d => d.timestamp);
+                        const cpus = data.map(d => d.cpu);
+                        const mems = data.map(d => d.memory);
+
+                        Plotly.update('historyChart', {
+                            x: [timestamps, timestamps],
+                            y: [cpus, mems]
+                        });
+                    }
+                })
+                .catch(err => console.error('History fetch failed', err));
+        }
+
         async function updateStats() {
             try {
                 const res = await fetch('/api/stats/resources');
                 const data = await res.json();
+
+                const now = new Date().toISOString();
 
                 // 1. CPU
                 const cpuVal = parseFloat(data.cpu.toFixed(1));
@@ -127,6 +198,12 @@
                 diskChart.setOption({ series: [{ data: [{ value: diskPercent, itemStyle: { color: '#3C6255' } }] }] });
                 document.getElementById('textDisk').textContent = `${diskUsedGB}GB / ${diskTotalGB}GB`;
 
+                // 4. Update Plotly
+                Plotly.extendTraces('historyChart', {
+                    x: [[now], [now]],
+                    y: [[cpuVal], [memPercent]]
+                }, [0, 1], 200); // Keep last 200 points
+
             } catch (err) {
                 console.error("Failed to fetch stats", err);
             }
@@ -134,6 +211,7 @@
 
         // Initialize
         initCharts();
+        initHistoryChart();
         updateStats(); // First fetch
         setInterval(updateStats, 3000); // Poll every 3 seconds
 

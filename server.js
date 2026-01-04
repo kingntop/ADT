@@ -12,6 +12,34 @@ const si = require('systeminformation');
 const fs = require('fs');
 const logger = require('./utils/logger'); // Import Logger
 
+// Resource History Buffer (In-Memory)
+const historyBuffer = [];
+const MAX_HISTORY_POINTS = 200; // 10 mins at 3s interval
+
+// Background Resource Poller
+setInterval(async () => {
+    try {
+        const [cpu, mem] = await Promise.all([
+            si.currentLoad(),
+            si.mem()
+        ]);
+
+        const timestamp = new Date().toISOString();
+        const dataPoint = {
+            timestamp,
+            cpu: cpu.currentLoad,
+            memory: (mem.active / mem.total) * 100
+        };
+
+        historyBuffer.push(dataPoint);
+        if (historyBuffer.length > MAX_HISTORY_POINTS) {
+            historyBuffer.shift(); // Remove oldest
+        }
+    } catch (err) {
+        console.error('Resource Poller Error:', err);
+    }
+}, 3000); // 3 seconds
+
 const app = express();
 const port = 3000;
 
@@ -210,6 +238,10 @@ app.get('/api/stats/resources', async (req, res) => {
         logger.error(error, '[Resources] Failed to fetch metrics');
         res.status(500).json({ error: 'Failed to fetch metrics' });
     }
+});
+
+app.get('/api/stats/resources/history', (req, res) => {
+    res.json(historyBuffer);
 });
 const departmentRoutes = require('./routes/departments')(pool);
 const treeRoutes = require('./routes/tree')(pool);
