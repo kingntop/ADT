@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- HEADER -->
+
     <!-- Custom Styles -->
     <style>
         .glass-panel {
@@ -32,12 +32,7 @@
     <!-- Main Content -->
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-900 relative">
         <!-- Header Placeholder (To be replaced by SSR) -->
-        <header class="bg-gray-800 shadow-md h-16 flex items-center justify-between px-6 z-10 border-b border-gray-700">
-            <div class="flex items-center">
-                <h2 class="text-xl font-semibold text-white">DB 현황</h2>
-            </div>
-            <!-- User Profile would go here -->
-        </header>
+        <!-- HEADER -->
 
         <main class="flex-1 overflow-x-hidden overflow-y-auto p-6 scrollbar-hide">
             <div class="max-w-7xl mx-auto space-y-6">
@@ -127,6 +122,11 @@
         </main>
     </div>
 
+    <script src="/js/layout.js"></script>
+    <script>
+        loadLayout('DB 현황');
+    </script>
+
     <!-- Scripts -->
     <script>
         let categoriesData = [];
@@ -159,8 +159,8 @@
             categoriesData.forEach((cat, idx) => {
                 const btn = document.createElement('button');
                 btn.className = `whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${idx === currentCategoryIdx
-                        ? 'border-blue-500 text-blue-400'
-                        : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-400'
+                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
                     }`;
                 btn.textContent = cat.name;
                 btn.onclick = () => selectCategory(idx);

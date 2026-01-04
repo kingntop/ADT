@@ -14,7 +14,7 @@ jobs:
         with:
           host: '140.238.8.114'
           username: 'stmlymc'
-          password: ${{ secrets.SERVER_PASSWORD }}
+          password: '!Naver9074!@'
           port: 22
           script: |
             # Navigate to the project directory

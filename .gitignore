@@ -3,4 +3,5 @@ node_modules/
 logs/
 *.log
 .gemini/
-
+deploy.yaml
+package-lock.json
