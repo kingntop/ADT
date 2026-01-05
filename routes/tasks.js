@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const logger = require('../utils/logger');
+const OpenAI = require('openai');
+const openai = new OpenAI(); // Expects OPENAI_API_KEY in env
 
 module.exports = (pool) => {
 
@@ -17,6 +19,61 @@ module.exports = (pool) => {
         } catch (err) {
             logger.error(err, "GET /api/tasks Error");
             res.status(500).json({ error: err.message });
+        }
+    });
+
+    // POST /api/tasks/search - Vector Search
+    router.post('/search', async (req, res) => {
+        const { query } = req.body;
+        if (!query) return res.status(400).json({ error: 'Query required' });
+
+        try {
+            // OpenAI Embedding
+            const embeddingResponse = await openai.embeddings.create({
+                model: "text-embedding-3-small",
+                input: query,
+            });
+
+            const embedding = embeddingResponse.data[0].embedding;
+            const vectorString = `[${embedding.join(',')}]`;
+
+            // Call Supabase RPC
+            const result = await pool.query(
+                `SELECT * FROM match_tasks($1, $2, $3)`,
+                [vectorString, 0.5, 10] // Threshold 0.5 for better quality
+            );
+
+            // Fetch full details for the matched IDs
+            if (result.rows.length > 0) {
+                const ids = result.rows.map(r => r.id);
+                const tasksQuery = `
+                    SELECT t.task_id, t.todo, t.status, t.created_at, t.completed_at, t.empno, e.ename as assignee_name 
+                    FROM tasks t 
+                    LEFT JOIN emp e ON t.empno = e.empno 
+                    WHERE t.task_id = ANY($1::int[])
+                `;
+                const tasksRes = await pool.query(tasksQuery, [ids]);
+
+                // Preserve order from similarity search
+                const orderedTasks = ids.map(id => tasksRes.rows.find(t => t.task_id === id)).filter(Boolean);
+
+                res.json(orderedTasks);
+            } else {
+                res.json([]);
+            }
+
+        } catch (err) {
+            logger.error(err, "POST /api/tasks/search Error");
+
+            // Handle OpenAI Errors
+            if (err.response) {
+                return res.status(err.response.status || 500).json({ error: `OpenAI Error: ${err.response.statusText || err.message}` });
+            }
+            if (err.status) { // Newer OpenAI SDK might use this
+                return res.status(err.status).json({ error: `OpenAI Error: ${err.message}` });
+            }
+
+            res.status(500).json({ error: 'Internal Server Error' });
         }
     });
 

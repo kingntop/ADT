@@ -52,6 +52,14 @@ module.exports = (pool) => {
                 role_name: user.role_name
             };
 
+            // Log Visit
+            const ip = req.ip || req.connection.remoteAddress;
+            const userAgent = req.headers['user-agent'];
+
+            // Non-blocking log
+            pool.query('INSERT INTO site_visits (user_id, ip_address, user_agent) VALUES ($1, $2, $3)', [user.user_id, ip, userAgent])
+                .catch(err => logger.error(err, '[Auth] Failed to log visit'));
+
             res.json({
                 success: true,
                 message: 'Login successful',
